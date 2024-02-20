@@ -1,0 +1,47 @@
+{
+    "@context": [
+        "https://www.w3.org/ns/activitystreams",
+        "https://w3id.org/security/v1",
+        {
+            "lemmy": "https://join-lemmy.org/ns#",
+            "litepub": "http://litepub.social/ns#",
+            "pt": "https://joinpeertube.org/ns#",
+            "sc": "http://schema.org/",
+            "ChatMessage": "litepub:ChatMessage",
+            "commentsEnabled": "pt:commentsEnabled",
+            "sensitive": "as:sensitive",
+            "matrixUserId": "lemmy:matrixUserId",
+            "postingRestrictedToMods": "lemmy:postingRestrictedToMods",
+            "removeData": "lemmy:removeData",
+            "stickied": "lemmy:stickied",
+            "moderators": {
+                "@type": "@id",
+                "@id": "lemmy:moderators"
+            },
+            "expires": "as:endTime",
+            "distinguished": "lemmy:distinguished",
+            "language": "sc:inLanguage",
+            "identifier": "sc:identifier"
+        }
+    ],
+    "actor": "https://sh.itjust.works/c/test",
+    "to": [
+        "https://www.w3.org/ns/activitystreams#Public"
+    ],
+    "object": {
+        "id": "https://lemmy.sdf.org/activities/like/b5bd1577-9677-4130-8312-cd2e2fd4ea44",
+        "actor": "https://lemmy.sdf.org/u/otl",
+        "@context": [
+            "https://join-lemmy.org/context.json",
+            "https://www.w3.org/ns/activitystreams"
+        ],
+        "object": "https://lemmy.sdf.org/comment/8402084",
+        "type": "Like",
+        "audience": "https://sh.itjust.works/c/test"
+    },
+    "cc": [
+        "https://sh.itjust.works/c/test/followers"
+    ],
+    "type": "Announce",
+    "id": "https://sh.itjust.works/activities/announce/2e1a0c57-b078-492f-95ce-6be5fb56974e"
+}

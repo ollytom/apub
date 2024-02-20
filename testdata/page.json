@@ -1,0 +1,55 @@
+{
+    "@context": [
+        "https://www.w3.org/ns/activitystreams",
+        "https://w3id.org/security/v1",
+        {
+            "lemmy": "https://join-lemmy.org/ns#",
+            "litepub": "http://litepub.social/ns#",
+            "pt": "https://joinpeertube.org/ns#",
+            "sc": "http://schema.org/",
+            "ChatMessage": "litepub:ChatMessage",
+            "commentsEnabled": "pt:commentsEnabled",
+            "sensitive": "as:sensitive",
+            "matrixUserId": "lemmy:matrixUserId",
+            "postingRestrictedToMods": "lemmy:postingRestrictedToMods",
+            "removeData": "lemmy:removeData",
+            "stickied": "lemmy:stickied",
+            "moderators": {
+                "@type": "@id",
+                "@id": "lemmy:moderators"
+            },
+            "expires": "as:endTime",
+            "distinguished": "lemmy:distinguished",
+            "language": "sc:inLanguage",
+            "identifier": "sc:identifier"
+        }
+    ],
+    "type": "Page",
+    "id": "https://lemmy.world/post/11959769",
+    "attributedTo": "https://lemmy.world/u/FlyingSquid",
+    "to": [
+        "https://lemmy.world/c/technology",
+        "https://www.w3.org/ns/activitystreams#Public"
+    ],
+    "name": "Your AI Girlfriend Is a Data-Harvesting Horror Show",
+    "cc": [],
+    "mediaType": "text/html",
+    "attachment": [
+        {
+            "href": "https://gizmodo.com/your-ai-girlfriend-is-a-data-harvesting-horror-show-1851253284",
+            "type": "Link"
+        }
+    ],
+    "image": {
+        "type": "Image",
+        "url": "https://lemmy.world/pictrs/image/cdaf8b2c-664a-4ff0-9585-cddc2e50e91a.jpeg"
+    },
+    "commentsEnabled": true,
+    "sensitive": false,
+    "published": "2024-02-14T19:22:33.194766+00:00",
+    "language": {
+        "identifier": "en",
+        "name": "English"
+    },
+    "audience": "https://lemmy.world/c/technology"
+}

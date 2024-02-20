@@ -1,0 +1,33 @@
+{
+    "type": "Note",
+    "id": "https://lemmy.world/comment/7547183",
+    "attributedTo": "https://lemmy.world/u/Spotlight7573",
+    "to": [
+        "https://www.w3.org/ns/activitystreams#Public"
+    ],
+    "cc": [
+        "https://lemmy.world/c/technology",
+        "https://lemmy.world/u/Feathercrown"
+    ],
+    "content": "<p>Passkeys are protected by either your device\u2019s password/passcode (something you know) or your device\u2019s biometrics (something you are). That provides two factors when combined with the passkey itself (something you have).</p>\n<p>The benefit of the password is only available if you know your password for your accounts or if you have a password manager. People can only remember a limited number of passwords without resorting to systems or patterns. Additionally, with many accounts now knowing the password is not enough to log in, you must either be logging in from an existing device or perform some kind of 2FA (TOTP, SMS, hardware security key, etc). So you already need to have a backup device to log in anyways. Same with a password manager: if you can have a copy of your vault with your <em>password</em> on another device then you can have a copy of your vault with your <em>passkey</em> on another device. Nothing gets rid of the requirement to have a backup device or copy of your passwords/passkeys if you want to avoid being locked out.</p>\n",
+    "inReplyTo": "https://lemmy.world/comment/7535501",
+    "mediaType": "text/html",
+    "source": {
+        "content": "Passkeys are protected by either your device's password/passcode (something you know) or your device's biometrics (something you are). That provides two factors when combined with the passkey itself (something you have).\n\nThe benefit of the password is only available if you know your password for your accounts or if you have a password manager. People can only remember a limited number of passwords without resorting to systems or patterns. Additionally, with many accounts now knowing the password is not enough to log in, you must either be logging in from an existing device or perform some kind of 2FA (TOTP, SMS, hardware security key, etc). So you already need to have a backup device to log in anyways. Same with a password manager: if you can have a copy of your vault with your *password* on another device then you can have a copy of your vault with your *passkey* on another device. Nothing gets rid of the requirement to have a backup device or copy of your passwords/passkeys if you want to avoid being locked out.",
+        "mediaType": "text/markdown"
+    },
+    "published": "2024-02-15T05:18:23.084123+00:00",
+    "tag": [
+        {
+            "href": "https://lemmy.world/u/Feathercrown",
+            "name": "@Feathercrown@lemmy.world",
+            "type": "Mention"
+        }
+    ],
+    "distinguished": false,
+    "language": {
+        "identifier": "en",
+        "name": "English"
+    },
+    "audience": "https://lemmy.world/c/technology"
+}

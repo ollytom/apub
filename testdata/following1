@@ -1,0 +1,22 @@
+{
+    "@context": "https://www.w3.org/ns/activitystreams",
+    "id": "https://hachyderm.io/users/otl/following?page=1",
+    "type": "OrderedCollectionPage",
+    "totalItems": 67,
+    "next": "https://hachyderm.io/users/otl/following?page=2",
+    "partOf": "https://hachyderm.io/users/otl/following",
+    "orderedItems": [
+        "https://programming.dev/c/cs_career_questions",
+        "https://lemmy.ml/c/mechanicalkeyboards",
+        "https://piefed.social/c/playground",
+        "https://gts.olowe.co/users/o",
+        "https://hachyderm.io/users/nabeards",
+        "https://fosstodon.org/users/edgren",
+        "https://bsd.network/users/OpenBSDAms",
+        "https://social.growyourown.services/users/FediTips",
+        "https://www.threads.net/ap/users/mosseri/",
+        "https://fosstodon.org/users/mvdan",
+        "https://lemmy.srcbeat.com/u/otl",
+        "https://chaos.social/users/Merovius"
+    ]
+}

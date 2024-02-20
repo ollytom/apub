@@ -1,0 +1,112 @@
+{
+    "@context": [
+        "https://www.w3.org/ns/activitystreams",
+        "https://w3id.org/security/v1",
+        {
+            "manuallyApprovesFollowers": "as:manuallyApprovesFollowers",
+            "toot": "http://joinmastodon.org/ns#",
+            "featured": {
+                "@id": "toot:featured",
+                "@type": "@id"
+            },
+            "featuredTags": {
+                "@id": "toot:featuredTags",
+                "@type": "@id"
+            },
+            "alsoKnownAs": {
+                "@id": "as:alsoKnownAs",
+                "@type": "@id"
+            },
+            "movedTo": {
+                "@id": "as:movedTo",
+                "@type": "@id"
+            },
+            "schema": "http://schema.org#",
+            "PropertyValue": "schema:PropertyValue",
+            "value": "schema:value",
+            "discoverable": "toot:discoverable",
+            "Device": "toot:Device",
+            "Ed25519Signature": "toot:Ed25519Signature",
+            "Ed25519Key": "toot:Ed25519Key",
+            "Curve25519Key": "toot:Curve25519Key",
+            "EncryptedMessage": "toot:EncryptedMessage",
+            "publicKeyBase64": "toot:publicKeyBase64",
+            "deviceId": "toot:deviceId",
+            "claim": {
+                "@type": "@id",
+                "@id": "toot:claim"
+            },
+            "fingerprintKey": {
+                "@type": "@id",
+                "@id": "toot:fingerprintKey"
+            },
+            "identityKey": {
+                "@type": "@id",
+                "@id": "toot:identityKey"
+            },
+            "devices": {
+                "@type": "@id",
+                "@id": "toot:devices"
+            },
+            "messageFranking": "toot:messageFranking",
+            "messageType": "toot:messageType",
+            "cipherText": "toot:cipherText",
+            "suspended": "toot:suspended",
+            "memorial": "toot:memorial",
+            "indexable": "toot:indexable",
+            "focalPoint": {
+                "@container": "@list",
+                "@id": "toot:focalPoint"
+            }
+        }
+    ],
+    "id": "https://hachyderm.io/users/otl",
+    "type": "Person",
+    "following": "https://hachyderm.io/users/otl/following",
+    "followers": "https://hachyderm.io/users/otl/followers",
+    "inbox": "https://hachyderm.io/users/otl/inbox",
+    "outbox": "https://hachyderm.io/users/otl/outbox",
+    "featured": "https://hachyderm.io/users/otl/collections/featured",
+    "featuredTags": "https://hachyderm.io/users/otl/collections/tags",
+    "preferredUsername": "otl",
+    "name": "Oliver Lowe",
+    "summary": "<p>Rollerblading, programming, writing, documentaries, travel, motorbikes\u2026 That\u2019s it!</p><p>Preferably o@gts.olowe.co.<br />This account is here to interact with bits of the Fediverse which don&#39;t play nicely with GoToSocial.</p>",
+    "url": "https://hachyderm.io/@otl",
+    "manuallyApprovesFollowers": false,
+    "discoverable": true,
+    "indexable": true,
+    "published": "2023-01-21T00:00:00Z",
+    "memorial": false,
+    "devices": "https://hachyderm.io/users/otl/collections/devices",
+    "publicKey": {
+        "id": "https://hachyderm.io/users/otl#main-key",
+        "owner": "https://hachyderm.io/users/otl",
+        "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4Yx6ZYDHNiBTyj2pQYZt\nR61AefGMZ9e9hlTvymqt11dzGvFZww42zPzIiiGM3SedEBhZ9hoYEu3YqSu7HLos\nlRdqTp30SzAo0tF5F/S90CQ3jhoblvjerNv8b9R3Fs79galDDvNcrf27efe1dFQ+\nHNWv6vvWILzP91IHOrM+JvLWTgpO+E1a14ez5qNrNIoUBVktiqAF9uAdghuseoM4\nX+CeUx6NnBDcM0M/YhUqM3AWtThrncp5LFa9wW9BvvhBNEaA+ElreTFVKryXaPAK\nyMoa9Lar1JAo54rltPudv3tSIcLG40JQAdD/0nbdcObVNLRiPJcfeHf+62ELiQkZ\nVwIDAQAB\n-----END PUBLIC KEY-----\n"
+    },
+    "tag": [],
+    "attachment": [
+        {
+            "type": "PropertyValue",
+            "name": "web",
+            "value": "www.olowe.co"
+        },
+        {
+            "type": "PropertyValue",
+            "name": "fediverse",
+            "value": "o@gts.olowe.co"
+        }
+    ],
+    "endpoints": {
+        "sharedInbox": "https://hachyderm.io/inbox"
+    },
+    "icon": {
+        "type": "Image",
+        "mediaType": "image/png",
+        "url": "https://media.hachyderm.io/accounts/avatars/109/729/649/989/499/669/original/052ab0fab12fd69c.png"
+    },
+    "image": {
+        "type": "Image",
+        "mediaType": "image/gif",
+        "url": "https://media.hachyderm.io/accounts/headers/109/729/649/989/499/669/original/f23d8e6fc39d47ab.gif"
+    }
+}
