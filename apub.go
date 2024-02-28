@@ -25,6 +25,8 @@ const AcceptMediaType string = `application/activity+json; profile="https://www.
 
 const ToEveryone string = "https://www.w3.org/ns/activitystreams#Public"
 
+var ErrNotExist = errors.New("no such activity")
+
 type Activity struct {
 	AtContext    string     `json:"@context"`
 	ID           string     `json:"id"`
@@ -32,6 +34,7 @@ type Activity struct {
 	Name         string     `json:"name,omitempty"`
 	Actor        string     `json:"actor,omitempty"`
 	Username     string     `json:"preferredUsername,omitempty"`
+	Summary      string     `json:"summary"`
 	Inbox        string     `json:"inbox,omitempty"`
 	Outbox       string     `json:"outbox,omitempty"`
 	To           []string   `json:"to,omitempty"`
@@ -96,15 +99,25 @@ func Decode(r io.Reader) (*Activity, error) {
 	return &a, nil
 }
 
+func DecodeActor(r io.Reader) (*Actor, error) {
+	a, err := Decode(r)
+	if err != nil {
+		return nil, err
+	}
+	return activityToActor(a), nil
+}
+
 type Actor struct {
-	AtContext string    `json:"@context"`
-	ID        string    `json:"id"`
-	Type      string    `json:"type"`
-	Name      string    `json:"name"`
-	Username  string    `json:"preferredUsername"`
-	Inbox     string    `json:"inbox"`
-	Outbox    string    `json:"outbox"`
-	PublicKey PublicKey `json:"publicKey"`
+	AtContext string     `json:"@context"`
+	ID        string     `json:"id"`
+	Type      string     `json:"type"`
+	Name      string     `json:"name"`
+	Username  string     `json:"preferredUsername"`
+	Summary   string     `json:"summary"`
+	Inbox     string     `json:"inbox"`
+	Outbox    string     `json:"outbox"`
+	Published *time.Time `json:"published,omitempty"`
+	PublicKey PublicKey  `json:"publicKey"`
 }
 
 type PublicKey struct {
@@ -114,6 +127,9 @@ type PublicKey struct {
 }
 
 func (a *Actor) Address() *mail.Address {
+	if a.Username == "" && a.Name == "" {
+		return &mail.Address{"", a.ID}
+	}
 	trimmed := strings.TrimPrefix(a.ID, "https://")
 	host, _, _ := strings.Cut(trimmed, "/")
 	addr := fmt.Sprintf("%s@%s", a.Username, host)

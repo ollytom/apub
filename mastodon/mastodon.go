@@ -17,13 +17,13 @@ type Post struct {
 	ID        string    `json:"id"`
 	InReplyTo string    `json:"in_reply_to_id"`
 	Content   string    `json:"content"`
+	URL       string    `json:"url"`
 }
 
 // DecodeMail decodes the RFC822 message-encoded post from r.
 func DecodeMail(r io.Reader) (*Post, error) {
 	msg, err := mail.ReadMessage(r)
 	if err != nil {
-		panic(err)
 		return nil, err
 	}
 	var post Post

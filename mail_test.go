@@ -2,7 +2,9 @@ package apub
 
 import (
 	"bytes"
+	"net"
 	"net/mail"
+	"net/smtp"
 	"os"
 	"testing"
 )
@@ -36,4 +38,27 @@ func TestMail(t *testing.T) {
 	if _, err := mail.ReadMessage(bytes.NewReader(b)); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestSendMail(t *testing.T) {
+	f, err := os.Open("testdata/note.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, err := Decode(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.Close()
+
+	conn, err := net.Dial("tcp", "[::1]:smtp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	client, err := smtp.NewClient(conn, "localhost")
+	err = SendMail(client, a, "test@example.invalid", "otl")
+	if err != nil {
+		t.Error(err)
+	}
+	client.Quit()
 }

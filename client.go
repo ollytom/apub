@@ -3,12 +3,12 @@ package apub
 import (
 	"bytes"
 	"crypto/rsa"
-	"io"
-	"os"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"log"
+	"io"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -52,7 +52,7 @@ func (c *Client) Lookup(id string) (*Activity, error) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, fmt.Errorf("no such activity")
+		return nil, ErrNotExist
 	} else if resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("non-ok response status %s", resp.Status)
 	}
@@ -64,6 +64,10 @@ func (c *Client) LookupActor(id string) (*Actor, error) {
 	if err != nil {
 		return nil, err
 	}
+	return activityToActor(activity), nil
+}
+
+func activityToActor(activity *Activity) *Actor {
 	return &Actor{
 		AtContext: activity.AtContext,
 		ID:        activity.ID,
@@ -72,7 +76,9 @@ func (c *Client) LookupActor(id string) (*Actor, error) {
 		Username:  activity.Username,
 		Inbox:     activity.Inbox,
 		Outbox:    activity.Outbox,
-	}, nil
+		Published: activity.Published,
+		Summary:   activity.Summary,
+	}
 }
 
 func (c *Client) Send(inbox string, activity *Activity) (*Activity, error) {
@@ -85,7 +91,6 @@ func (c *Client) Send(inbox string, activity *Activity) (*Activity, error) {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", ContentType)
-	req.Header.Set("Accept", ContentType)
 	if err := Sign(req, c.Key, c.Actor.PublicKey.ID); err != nil {
 		return nil, fmt.Errorf("sign outgoing request: %w", err)
 	}
@@ -93,14 +98,17 @@ func (c *Client) Send(inbox string, activity *Activity) (*Activity, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println(req.Method, req.URL, resp.Status)
 	switch resp.StatusCode {
 	case http.StatusOK:
 		if resp.ContentLength == 0 {
 			return nil, nil
 		}
 		defer resp.Body.Close()
-		return Decode(resp.Body)
+		activity, err := Decode(resp.Body)
+		if errors.Is(err, io.EOF) {
+			return nil, nil
+		}
+		return activity, err
 	case http.StatusAccepted, http.StatusNoContent:
 		return nil, nil
 	case http.StatusNotFound:

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/mail"
+	"net/smtp"
 	"strings"
 	"time"
 )
@@ -58,4 +59,30 @@ func MarshalMail(activity *Activity) ([]byte, error) {
 	}
 	_, err = mail.ReadMessage(bytes.NewReader(buf.Bytes()))
 	return buf.Bytes(), err
+}
+
+func SendMail(client *smtp.Client, activity *Activity, from string, to ...string) error {
+	b, err := MarshalMail(activity)
+	if err != nil {
+		return fmt.Errorf("marshal to mail message: %w", err)
+	}
+	if err := client.Mail(from); err != nil {
+		return fmt.Errorf("mail command: %w", err)
+	}
+	for _, rcpt := range to {
+		if err := client.Rcpt(rcpt); err != nil {
+			return fmt.Errorf("rcpt command: %w", err)
+		}
+	}
+	wc, err := client.Data()
+	if err != nil {
+		return fmt.Errorf("data command: %w", err)
+	}
+	if _, err := wc.Write(b); err != nil {
+		return fmt.Errorf("write message: %w", err)
+	}
+	if err := wc.Close(); err != nil {
+		return fmt.Errorf("close message writer: %w", err)
+	}
+	return nil
 }
