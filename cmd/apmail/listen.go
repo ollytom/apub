@@ -2,29 +2,26 @@ package main
 
 import (
 	"crypto/x509"
-	"database/sql"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
 	"io/fs"
 	"log"
-	"net"
 	"net/http"
 	"net/smtp"
 	"os"
+	"os/user"
 	"path"
+	"strings"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
 	"olowe.co/apub"
 )
 
 type server struct {
 	fsRoot    string
-	db        *sql.DB
 	apClient  *apub.Client
-	relay     *smtp.Client
 	relayAddr string
 }
 
@@ -65,17 +62,6 @@ func (srv *server) handleReceived(activity *apub.Activity) {
 	if err != nil {
 		log.Printf("relay %s via SMTP: %v", activity.ID, err)
 	}
-	var netErr *net.OpError
-	if errors.As(err, &netErr) {
-		srv.relay, err = smtp.Dial(srv.relayAddr)
-		if err == nil {
-			log.Printf("reconnected to relay %s", srv.relayAddr)
-			log.Printf("retrying activity %s", activity.ID)
-			srv.handleReceived(activity)
-			return
-		}
-		log.Printf("reconnect to relay %s: %v", srv.relayAddr, err)
-	}
 }
 
 func (srv *server) handleInbox(w http.ResponseWriter, req *http.Request) {
@@ -85,8 +71,8 @@ func (srv *server) handleInbox(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if req.Header.Get("Content-Type") != apub.ContentType {
-		stat := http.StatusUnsupportedMediaType
-		http.Error(w, http.StatusText(stat), stat)
+		w.Header().Set("Accept", apub.ContentType)
+		w.WriteHeader(http.StatusUnsupportedMediaType)
 		return
 	}
 	defer req.Body.Close()
@@ -158,17 +144,10 @@ func (srv *server) deliver(a *apub.Activity) error {
 }
 
 func (srv *server) accept(a *apub.Activity) error {
-	err := apub.SendMail(srv.relay, a, "nobody", "otl")
-	if err != nil {
-		srv.relay.Quit()
-		return fmt.Errorf("relay to SMTP server: %w", err)
-	}
-	return nil
+	return apub.SendMail(srv.relayAddr, nil, "nobody", []string{"otl"}, a)
 }
 
 var home string = os.Getenv("HOME")
-
-const FTS5 bool = true
 
 func logRequest(next http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
@@ -214,21 +193,57 @@ func newClient(keyPath string, actorPath string) (*apub.Client, error) {
 func serveActorFile(name string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		log.Printf("%s checked %s", req.Header.Get("X-Forwarded-For"), name)
-		// w.Header().Set("Content-Type", apub.ContentType)
+		w.Header().Set("Content-Type", apub.ContentType)
 		http.ServeFile(w, req, name)
 	}
 }
 
-func main() {
-	db, err := sql.Open("sqlite3", path.Join(home, "apubtest/index.db"))
-	if err != nil {
-		log.Fatal(err)
+func serveActivityFile(hfsys http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Content-Type", apub.ContentType)
+		hfsys.ServeHTTP(w, req)
 	}
-	if err := db.Ping(); err != nil {
-		log.Fatal(err)
-	}
+}
 
+func serveWebFingerFile(w http.ResponseWriter, req *http.Request) {
+	if !req.URL.Query().Has("resource") {
+		http.Error(w, "missing resource query parameter", http.StatusBadRequest)
+		return
+	}
+	q := req.URL.Query().Get("resource")
+	if !strings.HasPrefix(q, "acct:") {
+		http.Error(w, "only acct resource lookup supported", http.StatusNotImplemented)
+		return
+	}
+	addr := strings.TrimPrefix(q, "acct:")
+	username, _, ok := strings.Cut(addr, "@")
+	if !ok {
+		http.Error(w, "bad acct lookup: missing @ in address", http.StatusBadRequest)
+		return
+	}
+	fname, err := apub.UserWebFingerFile(username)
+	if _, ok := err.(user.UnknownUserError); ok {
+		http.Error(w, "no such user", http.StatusNotFound)
+		return
+	} else if err != nil {
+		log.Println(err)
+		http.Error(w, "oops", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	http.ServeFile(w, req, fname)
+}
+
+const usage string = "usage: apmail [address]"
+
+func main() {
+	if len(os.Args) > 2 {
+		log.Fatal(usage)
+	}
 	raddr := "[::1]:smtp"
+	if len(os.Args) == 2 {
+		raddr = os.Args[1]
+	}
 	sclient, err := smtp.Dial(raddr)
 	if err != nil {
 		log.Fatal(err)
@@ -236,18 +251,19 @@ func main() {
 	if err := sclient.Noop(); err != nil {
 		log.Fatalf("check connection to %s: %v", raddr, err)
 	}
+	sclient.Quit()
+	sclient.Close()
 
 	srv := &server{
 		fsRoot:    home + "/apubtest",
-		db:        db,
-		relay:     sclient,
 		relayAddr: raddr,
 	}
 	fsys := os.DirFS(srv.fsRoot)
 	hfsys := http.FileServer(http.FS(fsys))
 	http.HandleFunc("/actor.json", serveActorFile(home+"/apubtest/actor.json"))
-	http.HandleFunc("/", logRequest(hfsys))
+	http.HandleFunc("/.well-known/webfinger", serveWebFingerFile)
+	http.Handle("/", hfsys)
+	http.HandleFunc("/outbox/", serveActivityFile(hfsys))
 	http.HandleFunc("/inbox", srv.handleInbox)
-	http.HandleFunc("/search", srv.handleSearch)
 	log.Fatal(http.ListenAndServe("[::1]:8082", nil))
 }

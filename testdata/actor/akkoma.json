@@ -1,0 +1,135 @@
+{
+    "@context": [
+        "https://www.w3.org/ns/activitystreams",
+        "https://social.harpia.red/schemas/litepub-0.1.jsonld",
+        {
+            "@language": "und"
+        }
+    ],
+    "alsoKnownAs": [
+        "https://ursal.zone/users/kariboka"
+    ],
+    "attachment": [
+        {
+            "name": "Pro(nome/nombre/noun)",
+            "type": "PropertyValue",
+            "value": "Ele/\u00c9l/He"
+        },
+        {
+            "name": "Libre.fm",
+            "type": "PropertyValue",
+            "value": "<a href=\"http://libre.fm/user/kariboka\" rel=\"ugc\">libre.fm/user/kariboka</a>"
+        },
+        {
+            "name": "Cover",
+            "type": "PropertyValue",
+            "value": "PLA training Tibetan Women"
+        }
+    ],
+    "capabilities": {},
+    "discoverable": false,
+    "endpoints": {
+        "oauthAuthorizationEndpoint": "https://social.harpia.red/oauth/authorize",
+        "oauthRegistrationEndpoint": "https://social.harpia.red/api/v1/apps",
+        "oauthTokenEndpoint": "https://social.harpia.red/oauth/token",
+        "sharedInbox": "https://social.harpia.red/inbox",
+        "uploadMedia": "https://social.harpia.red/api/ap/upload_media"
+    },
+    "featured": "https://social.harpia.red/users/kariboka/collections/featured",
+    "followers": "https://social.harpia.red/users/kariboka/followers",
+    "following": "https://social.harpia.red/users/kariboka/following",
+    "icon": {
+        "type": "Image",
+        "url": "https://social.harpia.red/media/1c7eaca3442e4c382015fd9dc0d66f8d13752046cce9e7524d0027a31e276c91.png"
+    },
+    "id": "https://social.harpia.red/users/kariboka",
+    "image": {
+        "type": "Image",
+        "url": "https://social.harpia.red/media/57b445702afdb890b97c1479445c8a4fd2e090e9e9efd64082ae768339e6be40.png"
+    },
+    "inbox": "https://social.harpia.red/users/kariboka/inbox",
+    "manuallyApprovesFollowers": false,
+    "name": "Kari'boka",
+    "outbox": "https://social.harpia.red/users/kariboka/outbox",
+    "preferredUsername": "kariboka",
+    "publicKey": {
+        "id": "https://social.harpia.red/users/kariboka#main-key",
+        "owner": "https://social.harpia.red/users/kariboka",
+        "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsq3M+ZI7P0Y40bjZo+PT\n1a3uakmF4YVBzBOTgJx3OelGujlgV49T/N7yTTgWoBOQAzrDYVMz206cPUTUSGLh\nNOzq1c1S8XQfY7bH/VaggKWySMeK8UWqMiLYgtwyaPfieEqPnFO4Yoa6X5VxgkRN\nwmR27rcGq1YIBVLq/b52CcK+/cPkezYYg+4xyBjysusJjb3VlqPLX6quT+zVs/Nc\now3Mpg7vaP+/Z+3wxOZp1X2P42v5w4ggysPpUfjHyy4h+8N8h752r7XO1s2zowY7\npPU9jexeaTAH4dAYjSwLcluboL0gDFQiG7wAqRoVxYHYOE4IF8k9VSKBfB/QjeGe\nhwIDAQAB\n-----END PUBLIC KEY-----\n\n"
+    },
+    "summary": "Trabalhadores e oprimidos, unam-se!<br/><br/>&quot;\u00bfC\u00f3mo van a silenciar al jilguero o al canario?<br/>Si no hay c\u00e1rcel ni tumba para el canto libertario&quot;<br/><br/><a class=\"hashtag\" data-tag=\"communism\" href=\"https://social.harpia.red/tag/communism\">#Communism</a> <a class=\"hashtag\" data-tag=\"marxismleninism\" href=\"https://social.harpia.red/tag/marxismleninism\">#MarxismLeninism</a> <a class=\"hashtag\" data-tag=\"foss\" href=\"https://social.harpia.red/tag/foss\">#FOSS</a> <a class=\"hashtag\" data-tag=\"metal\" href=\"https://social.harpia.red/tag/metal\">#Metal</a> <a class=\"hashtag\" data-tag=\"piracy\" href=\"https://social.harpia.red/tag/piracy\">#Piracy</a> <a class=\"hashtag\" data-tag=\"antifa\" href=\"https://social.harpia.red/tag/antifa\">#Antifa</a> <a class=\"hashtag\" data-tag=\"freepalestine\" href=\"https://social.harpia.red/tag/freepalestine\">#FreePalestine</a>  <a class=\"hashtag\" data-tag=\"fedi22\" href=\"https://social.harpia.red/tag/fedi22\">#Fedi22</a> <br/><br/>\ud83c\uddf5\ud83c\uddf8 \ud83c\udde8\ud83c\uddfa \ud83c\uddf0\ud83c\uddf5 \ud83c\uddfb\ud83c\uddf3 \ud83c\udde6\ud83c\uddf4 \ud83c\uddf1\ud83c\udde6 \ud83c\udde8\ud83c\uddf3 \ud83c\uddf2\ud83c\uddff \ud83c\udde6\ud83c\uddf1 \ud83c\uddee\ud83c\uddf6<br/>\ud83c\udde7\ud83c\uddf7 \ud83c\uddfa\ud83c\uddfe \ud83c\udde6\ud83c\uddf7 \ud83c\udde8\ud83c\uddf4 \ud83c\uddf5\ud83c\uddfe \ud83c\uddf5\ud83c\uddea \ud83c\udde8\ud83c\uddf1 \ud83c\udde7\ud83c\uddf4 \ud83c\uddfb\ud83c\uddea \ud83c\uddec\ud83c\uddfe<br/><br/>\ud83c\udff3\ufe0f\u200d\ud83c\udf08 \ud83c\udff3\ufe0f\u200d\u26a7\ufe0f \ud83c\udff4\u200d\u2620\ufe0f<br/><br/>:com: :ana: :afa: :bp: :tux: :foss: :fedi: ",
+    "tag": [
+        {
+            "icon": {
+                "type": "Image",
+                "url": "https://social.harpia.red/emoji/revol/antifa.png"
+            },
+            "id": "https://social.harpia.red/emoji/revol/antifa.png",
+            "name": ":afa:",
+            "type": "Emoji",
+            "updated": "1970-01-01T00:00:00Z"
+        },
+        {
+            "icon": {
+                "type": "Image",
+                "url": "https://social.harpia.red/emoji/revol/anarchism.png"
+            },
+            "id": "https://social.harpia.red/emoji/revol/anarchism.png",
+            "name": ":ana:",
+            "type": "Emoji",
+            "updated": "1970-01-01T00:00:00Z"
+        },
+        {
+            "icon": {
+                "type": "Image",
+                "url": "https://social.harpia.red/emoji/revol/bp.png"
+            },
+            "id": "https://social.harpia.red/emoji/revol/bp.png",
+            "name": ":bp:",
+            "type": "Emoji",
+            "updated": "1970-01-01T00:00:00Z"
+        },
+        {
+            "icon": {
+                "type": "Image",
+                "url": "https://social.harpia.red/emoji/revol/communism.png"
+            },
+            "id": "https://social.harpia.red/emoji/revol/communism.png",
+            "name": ":com:",
+            "type": "Emoji",
+            "updated": "1970-01-01T00:00:00Z"
+        },
+        {
+            "icon": {
+                "type": "Image",
+                "url": "https://social.harpia.red/emoji/revol/fediverse.png"
+            },
+            "id": "https://social.harpia.red/emoji/revol/fediverse.png",
+            "name": ":fedi:",
+            "type": "Emoji",
+            "updated": "1970-01-01T00:00:00Z"
+        },
+        {
+            "icon": {
+                "type": "Image",
+                "url": "https://social.harpia.red/emoji/revol/foss.png"
+            },
+            "id": "https://social.harpia.red/emoji/revol/foss.png",
+            "name": ":foss:",
+            "type": "Emoji",
+            "updated": "1970-01-01T00:00:00Z"
+        },
+        {
+            "icon": {
+                "type": "Image",
+                "url": "https://social.harpia.red/emoji/revol/tux.png"
+            },
+            "id": "https://social.harpia.red/emoji/revol/tux.png",
+            "name": ":tux:",
+            "type": "Emoji",
+            "updated": "1970-01-01T00:00:00Z"
+        }
+    ],
+    "type": "Person",
+    "url": "https://social.harpia.red/users/kariboka"
+}

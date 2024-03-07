@@ -23,7 +23,10 @@ const ContentType string = "application/activity+json"
 
 const AcceptMediaType string = `application/activity+json; profile="https://www.w3.org/ns/activitystreams"`
 
-const ToEveryone string = "https://www.w3.org/ns/activitystreams#Public"
+// Activities addressed to this collection indicates the activity
+// is available to all users, authenticated or not.
+// See W3C Recommendation ActivityPub Section 5.6.
+const PublicCollection string = "https://www.w3.org/ns/activitystreams#Public"
 
 var ErrNotExist = errors.New("no such activity")
 
@@ -34,11 +37,12 @@ type Activity struct {
 	Name         string     `json:"name,omitempty"`
 	Actor        string     `json:"actor,omitempty"`
 	Username     string     `json:"preferredUsername,omitempty"`
-	Summary      string     `json:"summary"`
+	Summary      string     `json:"summary,omitempty"`
 	Inbox        string     `json:"inbox,omitempty"`
 	Outbox       string     `json:"outbox,omitempty"`
 	To           []string   `json:"to,omitempty"`
 	CC           []string   `json:"cc,omitempty"`
+	Followers    string     `json:"followers,omitempty"`
 	InReplyTo    string     `json:"inReplyTo,omitempty"`
 	Published    *time.Time `json:"published,omitempty"`
 	AttributedTo string     `json:"attributedTo,omitempty"`
@@ -48,8 +52,9 @@ type Activity struct {
 		Content   string `json:"content,omitempty"`
 		MediaType string `json:"mediaType,omitempty"`
 	} `json:"source,omitempty"`
-	Audience string          `json:"audience,omitempty"`
-	Object   json.RawMessage `json:"object,omitempty"`
+	PublicKey *PublicKey      `json:"publicKey,omitempty"`
+	Audience  string          `json:"audience,omitempty"`
+	Object    json.RawMessage `json:"object,omitempty"`
 }
 
 func (act *Activity) UnmarshalJSON(b []byte) error {
@@ -113,9 +118,10 @@ type Actor struct {
 	Type      string     `json:"type"`
 	Name      string     `json:"name"`
 	Username  string     `json:"preferredUsername"`
-	Summary   string     `json:"summary"`
+	Summary   string     `json:"summary,omitempty"`
 	Inbox     string     `json:"inbox"`
 	Outbox    string     `json:"outbox"`
+	Followers string     `json:"followers"`
 	Published *time.Time `json:"published,omitempty"`
 	PublicKey PublicKey  `json:"publicKey"`
 }
@@ -134,4 +140,20 @@ func (a *Actor) Address() *mail.Address {
 	host, _, _ := strings.Cut(trimmed, "/")
 	addr := fmt.Sprintf("%s@%s", a.Username, host)
 	return &mail.Address{a.Name, addr}
+}
+
+func (a *Actor) FollowersAddress() *mail.Address {
+	if a.Followers == "" {
+		return &mail.Address{"", ""}
+	}
+	addr := a.Address()
+	user, domain, found := strings.Cut(addr.Address, "@")
+	if !found {
+		return &mail.Address{"", ""}
+	}
+	addr.Address = fmt.Sprintf("%s+followers@%s", user, domain)
+	if addr.Name != "" {
+		addr.Name += " (followers)"
+	}
+	return addr
 }

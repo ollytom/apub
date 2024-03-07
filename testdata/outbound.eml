@@ -1,0 +1,21 @@
+From: Oliver Lowe <otl@apubtest2.srcbeat.com>
+Date: Wed, 6 Mar 2024 14:03:33 +1100
+To:  <henfredemars@infosec.pub>
+CC: "Programming" <programming@programming.dev>, <starman@programming.dev>
+In-Reply-To: <https://infosec.pub/comment/7135766>
+Subject:
+
+> It's a nice thought, but the White House encouraging
+> memory safety seems like a relatively insignificant push. It's the
+> weight of legacy code and established solutions that will hold us back
+> for a long time.
+
+Absolutely. Memory-safe languages have been around for decades. The
+reason there is so much poor code - including ones with manual memory
+management bugs - out there is not a technical problem. There are
+hordes and hordes of programmers, managers, companies etc. who would
+love to get paid to port this stuff. They'll do it for 10% of the
+price those stupid lumbering tech consultancies do it for.
+
+But who gets the contracts in the end?
+Give me a f'ing break!

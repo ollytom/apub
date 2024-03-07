@@ -1,0 +1,42 @@
+{
+    "@context": [
+        "https://www.w3.org/ns/activitystreams",
+        "https://social.harpia.red/schemas/litepub-0.1.jsonld",
+        {
+            "@language": "und"
+        }
+    ],
+    "actor": "https://social.harpia.red/users/kariboka",
+    "attachment": [],
+    "attributedTo": "https://social.harpia.red/users/kariboka",
+    "cc": [
+        "https://social.harpia.red/users/kariboka/followers"
+    ],
+    "content": "<p><span class=\"h-card\"><a class=\"u-url mention\" data-user=\"Afa6lBDBQ2IWEkCOem\" href=\"https://apubtest2.srcbeat.com/actor.json\" rel=\"ugc\">@<span>otl</span></a></span> hello from akkoma!</p>",
+    "contentMap": {
+        "pt": "<p><span class=\"h-card\"><a class=\"u-url mention\" data-user=\"Afa6lBDBQ2IWEkCOem\" href=\"https://apubtest2.srcbeat.com/actor.json\" rel=\"ugc\">@<span>otl</span></a></span> hello from akkoma!</p>"
+    },
+    "context": "https://apubtest2.srcbeat.com/outbox/1709705294468500457",
+    "conversation": "https://apubtest2.srcbeat.com/outbox/1709705294468500457",
+    "id": "https://social.harpia.red/objects/8db74fa7-d2fe-496c-b3f1-d93227c94bb9",
+    "inReplyTo": "https://apubtest2.srcbeat.com/outbox/1709705294468500457",
+    "published": "2024-03-06T17:11:06.113580Z",
+    "sensitive": false,
+    "source": {
+        "content": "@otl@apubtest2.srcbeat.com hello from akkoma!",
+        "mediaType": "text/markdown"
+    },
+    "summary": "",
+    "tag": [
+        {
+            "href": "https://apubtest2.srcbeat.com/actor.json",
+            "name": "@otl@apubtest2.srcbeat.com",
+            "type": "Mention"
+        }
+    ],
+    "to": [
+        "https://apubtest2.srcbeat.com/actor.json",
+        "https://www.w3.org/ns/activitystreams#Public"
+    ],
+    "type": "Note"
+}

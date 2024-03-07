@@ -1,0 +1,90 @@
+{
+    "@context": [
+        "https://www.w3.org/ns/activitystreams",
+        {
+            "ostatus": "http://ostatus.org#",
+            "atomUri": "ostatus:atomUri",
+            "inReplyToAtomUri": "ostatus:inReplyToAtomUri",
+            "conversation": "ostatus:conversation",
+            "sensitive": "as:sensitive",
+            "toot": "http://joinmastodon.org/ns#",
+            "votersCount": "toot:votersCount",
+            "blurhash": "toot:blurhash",
+            "focalPoint": {
+                "@container": "@list",
+                "@id": "toot:focalPoint"
+            },
+            "Hashtag": "as:Hashtag"
+        }
+    ],
+    "id": "https://hachyderm.io/users/otl/statuses/111994854113576914",
+    "type": "Note",
+    "summary": null,
+    "inReplyTo": null,
+    "published": "2024-02-26T00:04:15Z",
+    "url": "https://hachyderm.io/@otl/111994854113576914",
+    "attributedTo": "https://hachyderm.io/users/otl",
+    "to": [
+        "https://www.w3.org/ns/activitystreams#Public"
+    ],
+    "cc": [
+        "https://hachyderm.io/users/otl/followers",
+        "https://lemmy.world/c/selfhosted",
+        "https://lemmy.world/c/selfhosted/followers"
+    ],
+    "sensitive": false,
+    "atomUri": "https://hachyderm.io/users/otl/statuses/111994854113576914",
+    "inReplyToAtomUri": null,
+    "conversation": "tag:hachyderm.io,2024-02-26:objectId=129729049:objectType=Conversation",
+    "content": "<p>Follow-up: OpenBSD routers on AliExpress mini PCs</p><p>I got lots of replies to the last post showing the little OpenBSD internet gateway setup (super interesting; thanks!). Here&#39;s more info and pictures:<br /><a href=\"https://www.srcbeat.com/2024/02/aliexpress-openbsd-router/\" target=\"_blank\" rel=\"nofollow noopener noreferrer\" translate=\"no\"><span class=\"invisible\">https://www.</span><span class=\"ellipsis\">srcbeat.com/2024/02/aliexpress</span><span class=\"invisible\">-openbsd-router/</span></a></p><p>Something I&#39;ve been meaning to share for years now.</p><p><span class=\"h-card\" translate=\"no\"><a href=\"https://lemmy.world/c/selfhosted\" class=\"u-url mention\">@<span>selfhosted</span></a></span> <a href=\"https://hachyderm.io/tags/openbsd\" class=\"mention hashtag\" rel=\"tag\">#<span>openbsd</span></a> <a href=\"https://hachyderm.io/tags/selfhosted\" class=\"mention hashtag\" rel=\"tag\">#<span>selfhosted</span></a> <a href=\"https://hachyderm.io/tags/selfhosting\" class=\"mention hashtag\" rel=\"tag\">#<span>selfhosting</span></a></p>",
+    "contentMap": {
+        "en": "<p>Follow-up: OpenBSD routers on AliExpress mini PCs</p><p>I got lots of replies to the last post showing the little OpenBSD internet gateway setup (super interesting; thanks!). Here&#39;s more info and pictures:<br /><a href=\"https://www.srcbeat.com/2024/02/aliexpress-openbsd-router/\" target=\"_blank\" rel=\"nofollow noopener noreferrer\" translate=\"no\"><span class=\"invisible\">https://www.</span><span class=\"ellipsis\">srcbeat.com/2024/02/aliexpress</span><span class=\"invisible\">-openbsd-router/</span></a></p><p>Something I&#39;ve been meaning to share for years now.</p><p><span class=\"h-card\" translate=\"no\"><a href=\"https://lemmy.world/c/selfhosted\" class=\"u-url mention\">@<span>selfhosted</span></a></span> <a href=\"https://hachyderm.io/tags/openbsd\" class=\"mention hashtag\" rel=\"tag\">#<span>openbsd</span></a> <a href=\"https://hachyderm.io/tags/selfhosted\" class=\"mention hashtag\" rel=\"tag\">#<span>selfhosted</span></a> <a href=\"https://hachyderm.io/tags/selfhosting\" class=\"mention hashtag\" rel=\"tag\">#<span>selfhosting</span></a></p>"
+    },
+    "attachment": [
+        {
+            "type": "Document",
+            "mediaType": "image/jpeg",
+            "url": "https://media.hachyderm.io/media_attachments/files/111/994/844/539/887/387/original/1aeda4458378f609.jpeg",
+            "name": "Holding a mini PC and network appliance from AliExpress showing its 4 ethernet ports",
+            "blurhash": "URGbL@%g$%RiM}E2xajE~VR.RkWVjEt6ozt6",
+            "focalPoint": [
+                0.0,
+                0.0
+            ],
+            "width": 1111,
+            "height": 791
+        }
+    ],
+    "tag": [
+        {
+            "type": "Mention",
+            "href": "https://lemmy.world/c/selfhosted",
+            "name": "@selfhosted@lemmy.world"
+        },
+        {
+            "type": "Hashtag",
+            "href": "https://hachyderm.io/tags/openbsd",
+            "name": "#openbsd"
+        },
+        {
+            "type": "Hashtag",
+            "href": "https://hachyderm.io/tags/selfhosted",
+            "name": "#selfhosted"
+        },
+        {
+            "type": "Hashtag",
+            "href": "https://hachyderm.io/tags/selfhosting",
+            "name": "#selfhosting"
+        }
+    ],
+    "replies": {
+        "id": "https://hachyderm.io/users/otl/statuses/111994854113576914/replies",
+        "type": "Collection",
+        "first": {
+            "type": "CollectionPage",
+            "next": "https://hachyderm.io/users/otl/statuses/111994854113576914/replies?only_other_accounts=true&page=true",
+            "partOf": "https://hachyderm.io/users/otl/statuses/111994854113576914/replies",
+            "items": []
+        }
+    }
+}

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/rsa"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -68,7 +67,7 @@ func (c *Client) LookupActor(id string) (*Actor, error) {
 }
 
 func activityToActor(activity *Activity) *Actor {
-	return &Actor{
+	actor := &Actor{
 		AtContext: activity.AtContext,
 		ID:        activity.ID,
 		Type:      activity.Type,
@@ -76,9 +75,14 @@ func activityToActor(activity *Activity) *Actor {
 		Username:  activity.Username,
 		Inbox:     activity.Inbox,
 		Outbox:    activity.Outbox,
+		Followers: activity.Followers,
 		Published: activity.Published,
 		Summary:   activity.Summary,
 	}
+	if activity.PublicKey != nil {
+		actor.PublicKey = *activity.PublicKey
+	}
+	return actor
 }
 
 func (c *Client) Send(inbox string, activity *Activity) (*Activity, error) {
@@ -99,17 +103,7 @@ func (c *Client) Send(inbox string, activity *Activity) (*Activity, error) {
 		return nil, err
 	}
 	switch resp.StatusCode {
-	case http.StatusOK:
-		if resp.ContentLength == 0 {
-			return nil, nil
-		}
-		defer resp.Body.Close()
-		activity, err := Decode(resp.Body)
-		if errors.Is(err, io.EOF) {
-			return nil, nil
-		}
-		return activity, err
-	case http.StatusAccepted, http.StatusNoContent:
+	case http.StatusOK, http.StatusAccepted, http.StatusNoContent:
 		return nil, nil
 	case http.StatusNotFound:
 		return nil, fmt.Errorf("no such inbox %s", inbox)

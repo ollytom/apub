@@ -1,0 +1,20 @@
+{
+    "@context": [
+        "https://join-lemmy.org/context.json",
+        "https://www.w3.org/ns/activitystreams"
+    ],
+    "type": "Person",
+    "id": "https://lemmy.world/u/Spotlight7573",
+    "preferredUsername": "Spotlight7573",
+    "inbox": "https://lemmy.world/u/Spotlight7573/inbox",
+    "outbox": "https://lemmy.world/u/Spotlight7573/outbox",
+    "publicKey": {
+        "id": "https://lemmy.world/u/Spotlight7573#main-key",
+        "owner": "https://lemmy.world/u/Spotlight7573",
+        "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArnasafHuj2hkBYosS4LG\n28K6H9W+Z9iiMfX6J44VEt/x8CpA2tIWsGpWOk4ur+8Wt7lPqhH84v7fpQwseFl3\nOGAe0k0wiSN+doF8KuqPv6mkpYTVT+8u+9+hafN+mA2DLrKmxxJX3V8CEJMxPvF8\nUI+mPpl1QgXb6DOnAzwD3LPXDqJRlI8y+2tE5POJYWbRdWgdJjHwuxi/ZJ4uNgsL\nUrHdPI5UU+CprXL3jl3cWzr8L9rvG0a7WFyEk1BpfHzIfXtOv9dwSbcTFFYvp84q\nsE6T2ND/jb0S+ALKkFYGf0LVSfQI8a3bmufC08wLxs1UqS9tZhsYFFA6AJj9yAGS\nZwIDAQAB\n-----END PUBLIC KEY-----\n"
+    },
+    "endpoints": {
+        "sharedInbox": "https://lemmy.world/inbox"
+    },
+    "published": "2023-06-15T15:51:37.355579Z"
+}

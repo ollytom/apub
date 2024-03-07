@@ -3,6 +3,7 @@ package apub
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"net/mail"
 	"net/smtp"
 	"strings"
@@ -12,28 +13,41 @@ import (
 func MarshalMail(activity *Activity) ([]byte, error) {
 	buf := &bytes.Buffer{}
 
-	actor, err := LookupActor(activity.AttributedTo)
+	from, err := LookupActor(activity.AttributedTo)
 	if err != nil {
 		return nil, fmt.Errorf("lookup actor %s: %w", activity.AttributedTo, err)
 	}
-	fmt.Fprintf(buf, "From: %s\n", actor.Address())
+	fmt.Fprintf(buf, "From: %s\n", from.Address())
 
+	var rcpt []string
+	for _, u := range activity.To {
+		if u == PublicCollection {
+			continue
+		}
+		actor, err := LookupActor(u)
+		if err != nil {
+			return nil, fmt.Errorf("lookup actor %s: %w", u, err)
+		}
+		rcpt = append(rcpt, actor.Address().String())
+	}
+	fmt.Fprintln(buf, "To:", strings.Join(rcpt, ", "))
+
+	var rcptcc []string
 	if activity.CC != nil {
-		buf.WriteString("To: ")
-		rcpt := append(activity.To, activity.CC...)
-		var addrs []string
-		for _, u := range rcpt {
-			if u == ToEveryone {
+		for _, u := range activity.CC {
+			if u == PublicCollection {
+				continue
+			} else if u == from.Followers {
+				rcptcc = append(rcptcc, from.FollowersAddress().String())
 				continue
 			}
-			actor, err = LookupActor(u)
+			actor, err := LookupActor(u)
 			if err != nil {
 				return nil, fmt.Errorf("lookup actor %s: %w", u, err)
 			}
-			addrs = append(addrs, actor.Address().String())
+			rcptcc = append(rcptcc, actor.Address().String())
 		}
-		buf.WriteString(strings.Join(addrs, ", "))
-		buf.WriteString("\n")
+		fmt.Fprintln(buf, "CC:", strings.Join(rcptcc, ", "))
 	}
 
 	fmt.Fprintf(buf, "Date: %s\n", activity.Published.Format(time.RFC822))
@@ -47,8 +61,10 @@ func MarshalMail(activity *Activity) ([]byte, error) {
 
 	if activity.Source.Content != "" && activity.Source.MediaType == "text/markdown" {
 		fmt.Fprintln(buf, "Content-Type: text/plain; charset=utf-8")
-	} else {
+	} else if activity.MediaType != "" {
 		fmt.Fprintln(buf, "Content-Type:", activity.MediaType)
+	} else {
+		fmt.Fprintln(buf, "Content-Type:", "text/html; charset=utf-8")
 	}
 	fmt.Fprintln(buf, "Subject:", activity.Name)
 	fmt.Fprintln(buf)
@@ -61,28 +77,63 @@ func MarshalMail(activity *Activity) ([]byte, error) {
 	return buf.Bytes(), err
 }
 
-func SendMail(client *smtp.Client, activity *Activity, from string, to ...string) error {
-	b, err := MarshalMail(activity)
+func UnmarshalMail(msg *mail.Message) (*Activity, error) {
+	date, err := msg.Header.Date()
+	if err != nil {
+		return nil, fmt.Errorf("parse message date: %w", err)
+	}
+	from, err := msg.Header.AddressList("From")
+	if err != nil {
+		return nil, fmt.Errorf("parse From: %w", err)
+	}
+	wfrom, err := Finger(from[0].Address)
+	if err != nil {
+		return nil, fmt.Errorf("webfinger From: %w", err)
+	}
+
+	to, err := msg.Header.AddressList("To")
+	if err != nil {
+		return nil, fmt.Errorf("parse To address list: %w", err)
+	}
+	wto, err := fingerAll(to)
+	if err != nil {
+		return nil, fmt.Errorf("webfinger To addresses: %w", err)
+	}
+	var wcc []string
+	if msg.Header.Get("CC") != "" {
+		cc, err := msg.Header.AddressList("CC")
+		if err != nil {
+			return nil, fmt.Errorf("parse CC address list: %w", err)
+		}
+		wcc, err = fingerAll(cc)
+		if err != nil {
+			return nil, fmt.Errorf("webfinger CC addresses: %w", err)
+		}
+	}
+
+	buf := &bytes.Buffer{}
+	if _, err := io.Copy(buf, msg.Body); err != nil {
+		return nil, fmt.Errorf("read message body: %v", err)
+	}
+
+	return &Activity{
+		AtContext:    AtContext,
+		Type:         "Note",
+		AttributedTo: wfrom.ID,
+		To:           wto,
+		CC:           wcc,
+		MediaType:    "text/markdown",
+		Name:         strings.TrimSpace(msg.Header.Get("Subject")),
+		Content:      strings.TrimSpace(buf.String()),
+		InReplyTo:    strings.Trim(msg.Header.Get("In-Reply-To"), "<>"),
+		Published:    &date,
+	}, nil
+}
+
+func SendMail(addr string, auth smtp.Auth, from string, to []string, activity *Activity) error {
+	msg, err := MarshalMail(activity)
 	if err != nil {
 		return fmt.Errorf("marshal to mail message: %w", err)
 	}
-	if err := client.Mail(from); err != nil {
-		return fmt.Errorf("mail command: %w", err)
-	}
-	for _, rcpt := range to {
-		if err := client.Rcpt(rcpt); err != nil {
-			return fmt.Errorf("rcpt command: %w", err)
-		}
-	}
-	wc, err := client.Data()
-	if err != nil {
-		return fmt.Errorf("data command: %w", err)
-	}
-	if _, err := wc.Write(b); err != nil {
-		return fmt.Errorf("write message: %w", err)
-	}
-	if err := wc.Close(); err != nil {
-		return fmt.Errorf("close message writer: %w", err)
-	}
-	return nil
+	return smtp.SendMail(addr, auth, from, to, msg)
 }

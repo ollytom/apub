@@ -4,7 +4,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -32,6 +31,4 @@ func TestSign(t *testing.T) {
 	if err := Sign(req, key, "http://from.invalid/actor"); err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println(req.Header.Get("Digest"))
-	fmt.Println(req.Header.Get("Signature"))
 }
