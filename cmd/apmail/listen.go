@@ -192,7 +192,6 @@ func newClient(keyPath string, actorPath string) (*apub.Client, error) {
 
 func serveActorFile(name string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		log.Printf("%s checked %s", req.Header.Get("X-Forwarded-For"), name)
 		w.Header().Set("Content-Type", apub.ContentType)
 		http.ServeFile(w, req, name)
 	}
