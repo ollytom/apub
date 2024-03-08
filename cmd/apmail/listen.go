@@ -1,12 +1,8 @@
 package main
 
 import (
-	"crypto/x509"
 	"encoding/json"
-	"encoding/pem"
-	"errors"
 	"fmt"
-	"io/fs"
 	"log"
 	"net/http"
 	"net/smtp"
@@ -14,18 +10,16 @@ import (
 	"os/user"
 	"path"
 	"strings"
-	"time"
 
 	"olowe.co/apub"
 )
 
 type server struct {
-	fsRoot    string
-	apClient  *apub.Client
+	acceptFor []user.User
 	relayAddr string
 }
 
-func (srv *server) handleReceived(activity *apub.Activity) {
+func (srv *server) relay(username string, activity *apub.Activity) {
 	var err error
 	switch activity.Type {
 	case "Note":
@@ -49,17 +43,16 @@ func (srv *server) handleReceived(activity *apub.Activity) {
 	case "Create", "Update":
 		wrapped, err := activity.Unwrap(nil)
 		if err != nil {
-			log.Printf("unwrap apub in %s: %v", activity.ID, err)
+			log.Printf("unwrap from %s: %v", activity.ID, err)
 			return
 		}
-		srv.handleReceived(wrapped)
+		srv.relay(username, wrapped)
 		return
 	default:
 		return
 	}
-	log.Printf("relaying %s %s to %s", activity.Type, activity.ID, srv.relayAddr)
-	err = srv.accept(activity)
-	if err != nil {
+
+	if err := apub.SendMail(srv.relayAddr, nil, "nobody", []string{username}, activity); err != nil {
 		log.Printf("relay %s via SMTP: %v", activity.ID, err)
 	}
 }
@@ -75,12 +68,33 @@ func (srv *server) handleInbox(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusUnsupportedMediaType)
 		return
 	}
+	// url is https://example.com/{username}/inbox
+	username := path.Dir(req.URL.Path)
+	_, err := user.Lookup(username)
+	if _, ok := err.(user.UnknownUserError); ok {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	} else if err != nil {
+		log.Println("handle inbox:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	var accepted bool
+	for i := range srv.acceptFor {
+		if srv.acceptFor[i].Username == username {
+			accepted = true
+		}
+	}
+	if !accepted {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	defer req.Body.Close()
 	var rcv apub.Activity // received
 	if err := json.NewDecoder(req.Body).Decode(&rcv); err != nil {
 		log.Println("decode apub message:", err)
-		stat := http.StatusBadRequest
-		http.Error(w, "malformed activitypub message", stat)
+		http.Error(w, "malformed activitypub message", http.StatusBadRequest)
 		return
 	}
 	activity := &rcv
@@ -90,8 +104,7 @@ func (srv *server) handleInbox(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			err = fmt.Errorf("unwrap apub object in %s: %w", rcv.ID, err)
 			log.Println(err)
-			stat := http.StatusBadRequest
-			http.Error(w, err.Error(), stat)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}
@@ -105,46 +118,14 @@ func (srv *server) handleInbox(w http.ResponseWriter, req *http.Request) {
 	switch activity.Type {
 	case "Accept", "Reject":
 		w.WriteHeader(http.StatusAccepted)
-		srv.deliver(activity)
 		return
 	case "Create", "Note", "Page", "Article":
 		w.WriteHeader(http.StatusAccepted)
-		srv.handleReceived(activity)
+		log.Printf("accepted %s %s for relay to %s", activity.Type, activity.ID, username)
+		go srv.relay(username, activity)
 		return
 	}
 	w.WriteHeader(http.StatusAccepted)
-}
-
-func (srv *server) deliver(a *apub.Activity) error {
-	p, err := apub.MarshalMail(a)
-	if err != nil {
-		return fmt.Errorf("marshal mail message: %w", err)
-	}
-	now := time.Now().Unix()
-	seq := 0
-	max := 99
-	name := fmt.Sprintf("%d.%02d", now, seq)
-	name = path.Join(srv.fsRoot, "inbox", name)
-	for seq <= max {
-		name = fmt.Sprintf("%d.%02d", now, seq)
-		name = path.Join(srv.fsRoot, "inbox", name)
-		_, err := os.Stat(name)
-		if err == nil {
-			seq++
-			continue
-		} else if errors.Is(err, fs.ErrNotExist) {
-			break
-		}
-		return fmt.Errorf("get unique mdir name: %w", err)
-	}
-	if seq >= max {
-		return fmt.Errorf("infinite loop to get uniqe mdir name")
-	}
-	return os.WriteFile(name, p, 0644)
-}
-
-func (srv *server) accept(a *apub.Activity) error {
-	return apub.SendMail(srv.relayAddr, nil, "nobody", []string{"otl"}, a)
 }
 
 var home string = os.Getenv("HOME")
@@ -163,31 +144,6 @@ func logRequest(next http.Handler) http.HandlerFunc {
 		log.Printf("%s %s %s", addr, req.Method, req.URL)
 		next.ServeHTTP(w, req)
 	}
-}
-
-func newClient(keyPath string, actorPath string) (*apub.Client, error) {
-	b, err := os.ReadFile(keyPath)
-	if err != nil {
-		return nil, fmt.Errorf("load private key: %w", err)
-	}
-	block, _ := pem.Decode(b)
-	key, _ := x509.ParsePKCS1PrivateKey(block.Bytes)
-
-	f, err := os.Open(actorPath)
-	if err != nil {
-		return nil, fmt.Errorf("load actor file: %w", err)
-	}
-	defer f.Close()
-	actor, err := apub.DecodeActor(f)
-	if err != nil {
-		return nil, fmt.Errorf("decode actor: %w", err)
-	}
-
-	return &apub.Client{
-		Client: http.DefaultClient,
-		Key:    key,
-		Actor:  actor,
-	}, nil
 }
 
 func serveActorFile(name string) http.HandlerFunc {
@@ -226,7 +182,8 @@ func serveWebFingerFile(w http.ResponseWriter, req *http.Request) {
 		return
 	} else if err != nil {
 		log.Println(err)
-		http.Error(w, "oops", http.StatusInternalServerError)
+		stat := http.StatusInternalServerError
+		http.Error(w, http.StatusText(stat), stat)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -239,6 +196,13 @@ func main() {
 	if len(os.Args) > 2 {
 		log.Fatal(usage)
 	}
+
+	current, err := user.Current()
+	if err != nil {
+		log.Fatalf("lookup current user: %v", err)
+	}
+	acceptFor := []user.User{*current}
+
 	raddr := "[::1]:smtp"
 	if len(os.Args) == 2 {
 		raddr = os.Args[1]
@@ -254,15 +218,18 @@ func main() {
 	sclient.Close()
 
 	srv := &server{
-		fsRoot:    home + "/apubtest",
 		relayAddr: raddr,
+		acceptFor: acceptFor,
 	}
-	fsys := os.DirFS(srv.fsRoot)
-	hfsys := http.FileServer(http.FS(fsys))
-	http.HandleFunc("/actor.json", serveActorFile(home+"/apubtest/actor.json"))
 	http.HandleFunc("/.well-known/webfinger", serveWebFingerFile)
-	http.Handle("/", hfsys)
-	http.HandleFunc("/outbox/", serveActivityFile(hfsys))
-	http.HandleFunc("/inbox", srv.handleInbox)
+
+	for _, u := range acceptFor {
+		dataDir := path.Join(u.HomeDir, "apubtest")
+		root := fmt.Sprintf("/%s/", u.Username)
+		inbox := path.Join(root, "inbox")
+		hfsys := serveActivityFile(http.FileServer(http.Dir(dataDir)))
+		http.Handle(root, http.StripPrefix(root, hfsys))
+		http.HandleFunc(inbox, srv.handleInbox)
+	}
 	log.Fatal(http.ListenAndServe("[::1]:8082", nil))
 }
