@@ -91,15 +91,19 @@ func UnmarshalMail(msg *mail.Message) (*Activity, error) {
 		return nil, fmt.Errorf("webfinger From: %w", err)
 	}
 
-	to, err := msg.Header.AddressList("To")
-	if err != nil {
-		return nil, fmt.Errorf("parse To address list: %w", err)
+	var wto, wcc []string
+	if msg.Header.Get("To") != "" {
+		to, err := msg.Header.AddressList("To")
+		// ignore missing To line. Some ActivityPub servers only have the
+		// PublicCollection listed, which we don't care about.
+		if err != nil {
+			return nil, fmt.Errorf("parse To address list: %w", err)
+		}
+		wto, err = fingerAll(to)
+		if err != nil {
+			return nil, fmt.Errorf("webfinger To addresses: %w", err)
+		}
 	}
-	wto, err := fingerAll(to)
-	if err != nil {
-		return nil, fmt.Errorf("webfinger To addresses: %w", err)
-	}
-	var wcc []string
 	if msg.Header.Get("CC") != "" {
 		cc, err := msg.Header.AddressList("CC")
 		if err != nil {

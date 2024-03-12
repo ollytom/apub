@@ -19,12 +19,12 @@ import (
 // @context
 const AtContext string = "https://www.w3.org/ns/activitystreams"
 
+// ContentType is the MIME media type for ActivityPub.
 const ContentType string = "application/activity+json"
 
-const AcceptMediaType string = `application/activity+json; profile="https://www.w3.org/ns/activitystreams"`
-
-// Activities addressed to this collection indicates the activity
-// is available to all users, authenticated or not.
+// PublicCollection is the ActivityPub ID for the special collection indicating public access.
+// Any Activity addressed to this collection is meant to be available to all users,
+// authenticated or not.
 // See W3C Recommendation ActivityPub Section 5.6.
 const PublicCollection string = "https://www.w3.org/ns/activitystreams#Public"
 
@@ -80,6 +80,10 @@ func (act *Activity) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Unwrap returns the JSON-encoded Activity, if any, enclosed in act.
+// The Activity may be referenced by ID,
+// in which case the activity is looked up by client or by
+// apub.defaultClient if client is nil.
 func (act *Activity) Unwrap(client *Client) (*Activity, error) {
 	if act.Object == nil {
 		return nil, errors.New("no wrapped activity")
@@ -132,6 +136,13 @@ type PublicKey struct {
 	PublicKeyPEM string `json:"publicKeyPem"`
 }
 
+// Address generates the most likely address of the Actor.
+// The Actor's name (not the username) is used as the address' proper name, if present.
+// Implementors should verify the address using WebFinger.
+// For example, the followers address for Actor ID
+// https://hachyderm.io/users/otl is:
+//
+//	"Oliver Lowe" <otl+followers@hachyderm.io>
 func (a *Actor) Address() *mail.Address {
 	if a.Username == "" && a.Name == "" {
 		return &mail.Address{"", a.ID}
@@ -142,6 +153,15 @@ func (a *Actor) Address() *mail.Address {
 	return &mail.Address{a.Name, addr}
 }
 
+// FollowersAddress generates a non-standard address representing the Actor's followers
+// using plus addressing.
+// It is the Actor's address username part with a "+followers" suffix.
+// The address cannot be resolved using WebFinger.
+//
+// For example, the followers address for Actor ID
+// https://hachyderm.io/users/otl is:
+//
+//	"Oliver Lowe (followers)" <otl+followers@hachyderm.io>
 func (a *Actor) FollowersAddress() *mail.Address {
 	if a.Followers == "" {
 		return &mail.Address{"", ""}

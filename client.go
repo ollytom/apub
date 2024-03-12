@@ -23,8 +23,11 @@ func LookupActor(id string) (*Actor, error) {
 
 type Client struct {
 	*http.Client
-	Key   *rsa.PrivateKey
-	Actor *Actor
+	// Key is a RSA private key which will be used to sign requests.
+	Key *rsa.PrivateKey
+	// PubKeyID is a URL where the corresponding public key of Key
+	// may be accessed. This must be set if Key is also set.
+	PubKeyID string // actor.PublicKey.ID
 }
 
 func (c *Client) Lookup(id string) (*Activity, error) {
@@ -40,8 +43,8 @@ func (c *Client) Lookup(id string) (*Activity, error) {
 		return nil, err
 	}
 	req.Header.Set("Accept", ContentType)
-	if c.Key != nil && c.Actor != nil {
-		if err := Sign(req, c.Key, c.Actor.PublicKey.ID); err != nil {
+	if c.Key != nil && c.PubKeyID != "" {
+		if err := Sign(req, c.Key, c.PubKeyID); err != nil {
 			return nil, fmt.Errorf("sign http request: %w", err)
 		}
 	}
@@ -95,7 +98,7 @@ func (c *Client) Send(inbox string, activity *Activity) (*Activity, error) {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", ContentType)
-	if err := Sign(req, c.Key, c.Actor.PublicKey.ID); err != nil {
+	if err := Sign(req, c.Key, c.PubKeyID); err != nil {
 		return nil, fmt.Errorf("sign outgoing request: %w", err)
 	}
 	resp, err := c.Do(req)
