@@ -54,6 +54,7 @@ type Activity struct {
 	} `json:"source,omitempty"`
 	PublicKey *PublicKey      `json:"publicKey,omitempty"`
 	Audience  string          `json:"audience,omitempty"`
+	Href      string          `json:"href,omitempty"`
 	Tag       []Activity      `json:"tag,omitempty"`
 	Object    json.RawMessage `json:"object,omitempty"`
 }

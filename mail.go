@@ -92,6 +92,7 @@ func UnmarshalMail(msg *mail.Message) (*Activity, error) {
 	}
 
 	var wto, wcc []string
+	var tags []Activity
 	if msg.Header.Get("To") != "" {
 		to, err := msg.Header.AddressList("To")
 		// ignore missing To line. Some ActivityPub servers only have the
@@ -104,7 +105,10 @@ func UnmarshalMail(msg *mail.Message) (*Activity, error) {
 			return nil, fmt.Errorf("webfinger To addresses: %w", err)
 		}
 		wto = make([]string, len(actors))
+		tags = make([]Activity, len(actors))
 		for i, a := range actors {
+			addr := strings.Trim(to[i].Address, "<>")
+			tags[i] = Activity{Type: "Mention", Href: a.ID, Name: "@" + addr}
 			wto[i] = a.ID
 		}
 	}
@@ -139,6 +143,7 @@ func UnmarshalMail(msg *mail.Message) (*Activity, error) {
 		Content:      strings.TrimSpace(buf.String()),
 		InReplyTo:    strings.Trim(msg.Header.Get("In-Reply-To"), "<>"),
 		Published:    &date,
+		Tag:          tags,
 	}, nil
 }
 

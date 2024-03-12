@@ -26,7 +26,7 @@ func TestMailAddress(t *testing.T) {
 		{
 			"testdata/actor/lemmy.json",
 			"<Spotlight7573@lemmy.world>",
-			"<@>", // empty mail.Address
+			"<@>", // zero mail.Address
 		},
 	}
 	for _, tt := range tests {
@@ -94,7 +94,15 @@ func TestUnmarshalMail(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping network calls to unmarshal mail message to Activity")
 	}
-	if _, err := UnmarshalMail(msg); err != nil {
+	a, err := UnmarshalMail(msg)
+	if err != nil {
 		t.Fatal(err)
+	}
+	if len(a.Tag) != 1 {
+		t.Fatalf("wanted 1 tag in unmarshalled activity, got %d", len(a.Tag))
+	}
+	want := "@henfredemars@infosec.pub"
+	if a.Tag[0].Name != want {
+		t.Errorf("wanted tag name %s, got %s", want, a.Tag[0].Name)
 	}
 }
