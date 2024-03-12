@@ -12,9 +12,9 @@
     "cc": [
         "https://social.harpia.red/users/kariboka/followers"
     ],
-    "content": "<p><span class=\"h-card\"><a class=\"u-url mention\" data-user=\"Afa6lBDBQ2IWEkCOem\" href=\"https://apubtest2.srcbeat.com/actor.json\" rel=\"ugc\">@<span>otl</span></a></span> hello from akkoma!</p>",
+    "content": "<p><span class=\"h-card\"><a class=\"u-url mention\" data-user=\"Afa6lBDBQ2IWEkCOem\" href=\"https://apubtest2.srcbeat.com/otl/actor.json\" rel=\"ugc\">@<span>otl</span></a></span> hello from akkoma!</p>",
     "contentMap": {
-        "pt": "<p><span class=\"h-card\"><a class=\"u-url mention\" data-user=\"Afa6lBDBQ2IWEkCOem\" href=\"https://apubtest2.srcbeat.com/actor.json\" rel=\"ugc\">@<span>otl</span></a></span> hello from akkoma!</p>"
+        "pt": "<p><span class=\"h-card\"><a class=\"u-url mention\" data-user=\"Afa6lBDBQ2IWEkCOem\" href=\"https://apubtest2.srcbeat.com/otl/actor.json\" rel=\"ugc\">@<span>otl</span></a></span> hello from akkoma!</p>"
     },
     "context": "https://apubtest2.srcbeat.com/outbox/1709705294468500457",
     "conversation": "https://apubtest2.srcbeat.com/outbox/1709705294468500457",
@@ -29,13 +29,13 @@
     "summary": "",
     "tag": [
         {
-            "href": "https://apubtest2.srcbeat.com/actor.json",
+            "href": "https://apubtest2.srcbeat.com/otl/actor.json",
             "name": "@otl@apubtest2.srcbeat.com",
             "type": "Mention"
         }
     ],
     "to": [
-        "https://apubtest2.srcbeat.com/actor.json",
+        "https://apubtest2.srcbeat.com/otl/actor.json",
         "https://www.w3.org/ns/activitystreams#Public"
     ],
     "type": "Note"
