@@ -52,6 +52,7 @@ func serveWebFinger(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(jrd); err != nil {
 		log.Printf("encode webfinger response: %v", err)
 	}

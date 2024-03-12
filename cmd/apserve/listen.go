@@ -188,7 +188,7 @@ func main() {
 	srv := &server{
 		acceptFor: acceptFor,
 	}
-	http.HandleFunc("/.well-known/webfinger", serveWebFingerFile)
+	http.HandleFunc("/.well-known/webfinger", serveWebFinger)
 
 	for _, u := range acceptFor {
 		dataDir := path.Join(u.HomeDir, "apubtest")
