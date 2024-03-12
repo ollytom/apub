@@ -16,8 +16,13 @@ import (
 	"time"
 )
 
-// @context
-const AtContext string = "https://www.w3.org/ns/activitystreams"
+// NormContext is a URL referencing the
+// normative Activity Streams 2.0 JSON-LD @context definition.
+// All [Activity] variables should have their AtContext field set to this value.
+// See [Activity Streams 2.0] section 2.1.
+//
+// [Activity Streams 2.0]: https://www.w3.org/TR/activitystreams-core/
+const NormContext string = "https://www.w3.org/ns/activitystreams"
 
 // ContentType is the MIME media type for ActivityPub.
 const ContentType string = "application/activity+json"
@@ -30,6 +35,8 @@ const PublicCollection string = "https://www.w3.org/ns/activitystreams#Public"
 
 var ErrNotExist = errors.New("no such activity")
 
+// Activity represents the Activity Streams Object core type.
+// See Activity Streams 2.0, section 4.1.
 type Activity struct {
 	AtContext    string     `json:"@context"`
 	ID           string     `json:"id"`
@@ -56,6 +63,9 @@ type Activity struct {
 	Audience  string          `json:"audience,omitempty"`
 	Href      string          `json:"href,omitempty"`
 	Tag       []Activity      `json:"tag,omitempty"`
+	// Contains a JSON-encoded Activity, or a URL as a JSON string
+	// pointing to an Activity. Use Activity.Unwrap() to access
+	// the enclosed, decoded value.
 	Object    json.RawMessage `json:"object,omitempty"`
 }
 

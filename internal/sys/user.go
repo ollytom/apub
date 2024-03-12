@@ -54,7 +54,7 @@ func Actor(name, host string) (*apub.Actor, error) {
 		return nil, fmt.Errorf("read public key file: %w", err)
 	}
 	return &apub.Actor{
-		AtContext: apub.AtContext,
+		AtContext: apub.NormContext,
 		ID:        root + "/actor.json",
 		Type:      "Person",
 		Name:      u.Name,

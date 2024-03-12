@@ -133,7 +133,7 @@ func UnmarshalMail(msg *mail.Message) (*Activity, error) {
 	}
 
 	return &Activity{
-		AtContext:    AtContext,
+		AtContext:    NormContext,
 		Type:         "Note",
 		AttributedTo: wfrom.ID,
 		To:           wto,
