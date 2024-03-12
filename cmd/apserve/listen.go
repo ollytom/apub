@@ -140,29 +140,6 @@ func (srv *server) handleInbox(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func logRequest(next http.Handler) http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		// skip logging from checks by load balancer
-		if req.URL.Path == "/" && req.Method == http.MethodHead {
-			next.ServeHTTP(w, req)
-			return
-		}
-		addr := req.RemoteAddr
-		if req.Header.Get("X-Forwarded-For") != "" {
-			addr = req.Header.Get("X-Forwarded-For")
-		}
-		log.Printf("%s %s %s", addr, req.Method, req.URL)
-		next.ServeHTTP(w, req)
-	}
-}
-
-func serveActorFile(name string) http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		w.Header().Set("Content-Type", apub.ContentType)
-		http.ServeFile(w, req, name)
-	}
-}
-
 func serveActivityFile(hfsys http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", apub.ContentType)
