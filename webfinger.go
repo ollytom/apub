@@ -11,6 +11,9 @@ import (
 	"webfinger.net/go/webfinger"
 )
 
+// Finger is convenience function returning the corresponding Actor,
+// if any, of an address resolvable by WebFinger.
+// It is equivalent to doing webfinger.Lookup then LookupActor.
 func Finger(address string) (*Actor, error) {
 	jrd, err := webfinger.Lookup(address, nil)
 	if err != nil {
