@@ -24,8 +24,8 @@ func Finger(address string) (*Actor, error) {
 	return nil, ErrNotExist
 }
 
-func fingerAll(alist []*mail.Address) ([]string, error) {
-	actors := make([]string, len(alist))
+func fingerAll(alist []*mail.Address) ([]Actor, error) {
+	actors := make([]Actor, len(alist))
 	for i, addr := range alist {
 		if strings.Contains(addr.Address, "+followers") {
 			addr.Address = strings.Replace(addr.Address, "+followers", "", 1)
@@ -33,14 +33,14 @@ func fingerAll(alist []*mail.Address) ([]string, error) {
 			if err != nil {
 				return actors, fmt.Errorf("finger %s: %w", addr.Address, err)
 			}
-			actors[i] = a.Followers
+			actors[i] = *a
 			continue
 		}
 		actor, err := Finger(addr.Address)
 		if err != nil {
 			return actors, fmt.Errorf("finger %s: %w", addr.Address, err)
 		}
-		actors[i] = actor.ID
+		actors[i] = *actor
 	}
 	return actors, nil
 }

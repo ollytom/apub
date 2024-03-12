@@ -99,9 +99,13 @@ func UnmarshalMail(msg *mail.Message) (*Activity, error) {
 		if err != nil {
 			return nil, fmt.Errorf("parse To address list: %w", err)
 		}
-		wto, err = fingerAll(to)
+		actors, err := fingerAll(to)
 		if err != nil {
 			return nil, fmt.Errorf("webfinger To addresses: %w", err)
+		}
+		wto = make([]string, len(actors))
+		for i, a := range actors {
+			wto[i] = a.ID
 		}
 	}
 	if msg.Header.Get("CC") != "" {
@@ -109,9 +113,13 @@ func UnmarshalMail(msg *mail.Message) (*Activity, error) {
 		if err != nil {
 			return nil, fmt.Errorf("parse CC address list: %w", err)
 		}
-		wcc, err = fingerAll(cc)
+		actors, err := fingerAll(cc)
 		if err != nil {
 			return nil, fmt.Errorf("webfinger CC addresses: %w", err)
+		}
+		wcc = make([]string, len(actors))
+		for i, a := range actors {
+			wcc[i] = a.ID
 		}
 	}
 
