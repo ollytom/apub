@@ -3,9 +3,6 @@ package apub
 import (
 	"fmt"
 	"net/mail"
-	"os"
-	"os/user"
-	"path"
 	"strings"
 
 	"webfinger.net/go/webfinger"
