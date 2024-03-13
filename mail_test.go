@@ -75,8 +75,23 @@ func TestMarshalMail(t *testing.T) {
 			t.Errorf("%s: marshal to mail message: %v", name, err)
 			continue
 		}
-		if _, err := mail.ReadMessage(bytes.NewReader(b)); err != nil {
+		msg, err := mail.ReadMessage(bytes.NewReader(b))
+		if err != nil {
 			t.Errorf("%s: read back message from marshalled activity: %v", name, err)
+			continue
+		}
+		p := make([]byte, 8)
+		n, err := msg.Body.Read(p)
+		if err != nil {
+			t.Errorf("%s: read message body: %v", name, err)
+		}
+		if n != len(p) {
+			if a.Type == "Page" {
+				// Pages have no content, so skip this case
+				continue
+			}
+			t.Errorf("%s: short read from body", name)
+			t.Log(string(p))
 		}
 	}
 }

@@ -59,20 +59,18 @@ func MarshalMail(activity *Activity) ([]byte, error) {
 		fmt.Fprintf(buf, "References: <%s>\n", activity.InReplyTo)
 	}
 
+	body := &activity.Content
 	if activity.Source.Content != "" && activity.Source.MediaType == "text/markdown" {
+		body = &activity.Source.Content
 		fmt.Fprintln(buf, "Content-Type: text/plain; charset=utf-8")
-	} else if activity.MediaType != "" {
-		fmt.Fprintln(buf, "Content-Type:", activity.MediaType)
+	} else if activity.MediaType == "text/markdown" {
+		fmt.Fprintln(buf, "Content-Type: text/plain; charset=utf-8")
 	} else {
 		fmt.Fprintln(buf, "Content-Type:", "text/html; charset=utf-8")
 	}
 	fmt.Fprintln(buf, "Subject:", activity.Name)
 	fmt.Fprintln(buf)
-	if activity.Source.Content != "" && activity.Source.MediaType == "text/markdown" {
-		fmt.Fprintln(buf, activity.Source.Content)
-	} else {
-		fmt.Fprintln(buf, activity.Content)
-	}
+	fmt.Fprintln(buf, *body)
 	_, err = mail.ReadMessage(bytes.NewReader(buf.Bytes()))
 	return buf.Bytes(), err
 }
