@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"os/user"
+	"path"
 	"strings"
 
 	"olowe.co/apub"
@@ -55,5 +57,30 @@ func serveWebFinger(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(jrd); err != nil {
 		log.Printf("encode webfinger response: %v", err)
+	}
+}
+
+func (srv *server) nodeInfo() (NodeInfo, error) {
+	var count int
+	for _, user := range srv.acceptFor {
+		dents, err := os.ReadDir(path.Join(user.HomeDir, "apubtest/outbox"))
+		if err != nil {
+			return NodeInfo{}, fmt.Errorf("count posts in outbox: %w", err)
+		}
+		count += len(dents)
+	}
+	return NewNodeInfo("apas", "0.0.1", len(srv.acceptFor), count), nil
+}
+
+func (srv *server) serveNodeInfo(w http.ResponseWriter, req *http.Request) {
+	info, err := srv.nodeInfo()
+	if err != nil {
+		log.Println("serve nodeinfo:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(info); err != nil {
+		log.Println("encode nodeinfo:", err)
 	}
 }

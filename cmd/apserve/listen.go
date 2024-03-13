@@ -166,6 +166,9 @@ func main() {
 		acceptFor: acceptFor,
 	}
 	http.HandleFunc("/.well-known/webfinger", serveWebFinger)
+	http.Handle("/.well-known/nodeinfo", http.RedirectHandler("/nodeinfo/2.0", http.StatusFound))
+	http.HandleFunc("/nodeinfo/2.0", srv.serveNodeInfo)
+	http.HandleFunc("/nodeinfo/2.0.json", srv.serveNodeInfo)
 
 	for _, u := range acceptFor {
 		dataDir := path.Join(u.HomeDir, "apubtest")
