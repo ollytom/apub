@@ -70,10 +70,7 @@ func (s *Session) Data(r io.Reader) error {
 	cmd := exec.Command("apsend", args...)
 	cmd.Stdin = r
 	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	if err1, ok := err.(*exec.ExitError); ok {
-		return fmt.Errorf("execute mailer: %v", string(err1.Stderr))
-	} else if err != nil {
+	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("execute mailer: %v", err)
 	}
 	return nil

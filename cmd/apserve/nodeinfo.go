@@ -1,4 +1,4 @@
-package apub
+package main
 
 // NodeInfo represents...
 type NodeInfo struct {
