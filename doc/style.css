@@ -36,4 +36,7 @@ pre {
 	a:visited {
 		color: violet;
 	}
+	pre {
+		background: DarkSlateGrey;
+	}
 }
