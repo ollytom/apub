@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -178,5 +179,11 @@ func main() {
 		inbox := path.Join(root, "inbox")
 		http.HandleFunc(inbox, srv.handleInbox)
 	}
+
+	sub, err := fs.Sub(apub.DocFS, "doc")
+	if err != nil {
+		log.Fatalln("load documentation:", err)
+	}
+	http.Handle("/", http.FileServer(http.FS(sub)))
 	log.Fatal(http.ListenAndServe("[::1]:8082", nil))
 }

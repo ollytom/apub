@@ -1,0 +1,39 @@
+@font-face {
+	font-family: GoRegular;
+	src: url(GoRegular.woff2);
+}
+
+body {
+	margin: 1em auto;
+	padding: 1em;
+	max-width: 40em;
+	font-family: GoRegular, sans-serif;
+}
+nav {
+	text-align: right;
+}
+img {
+	max-width: 35em;
+}
+p {
+	text-align: justify;
+	hyphens: auto;
+}
+pre {
+	background: #eee;
+	padding: 1em;
+	border-radius: 1em;
+	overflow-x: auto;
+}
+@media (prefers-color-scheme: dark) {
+	body {
+		color: white;
+		background: black;
+	}
+	a:link {
+		color: skyblue;
+	}
+	a:visited {
+		color: violet;
+	}
+}

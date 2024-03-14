@@ -1,0 +1,2 @@
+apas.html: head.html tail.html apas.md style.css
+	lowdown apas.md | cat head.html /dev/stdin tail.html > $target
