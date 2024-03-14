@@ -76,6 +76,15 @@ func MarshalMail(activity *Activity) ([]byte, error) {
 }
 
 func UnmarshalMail(msg *mail.Message) (*Activity, error) {
+	ct := msg.Header.Get("Content-Type")
+	if strings.HasPrefix(ct, "multipart") {
+		return nil, fmt.Errorf("cannot unmarshal from multipart message")
+	}
+	enc := msg.Header.Get("Content-Transfer-Encoding")
+	if enc == "quoted-printable" {
+		return nil, fmt.Errorf("cannot decode message with transfer encoding: %s", enc)
+	}
+
 	date, err := msg.Header.Date()
 	if err != nil {
 		return nil, fmt.Errorf("parse message date: %w", err)
