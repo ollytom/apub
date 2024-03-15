@@ -49,13 +49,16 @@ func wrapCreate(activity *apub.Activity) (*apub.Activity, error) {
 	}, nil
 }
 
+var jflag bool
 var tflag bool
 var Fflag bool
 
 func init() {
-	// log.SetFlags...
+	log.SetFlags(0)
+	log.SetPrefix("apsend: ")
 	flag.BoolVar(&Fflag, "F", false, "file a copy for the sender")
 	flag.BoolVar(&tflag, "t", false, "read recipients from message")
+	flag.BoolVar(&jflag, "t", false, "read ActivityPub JSON")
 	flag.Parse()
 }
 
@@ -70,17 +73,28 @@ func main() {
 		os.Exit(1)
 	}
 
-	bmsg, err := io.ReadAll(os.Stdin)
-	if err != nil {
-		log.Fatal(err)
-	}
-	msg, err := mail.ReadMessage(bytes.NewReader(bmsg))
-	if err != nil {
-		log.Fatal(err)
-	}
-	activity, err := apub.UnmarshalMail(msg)
-	if err != nil {
-		log.Fatalln("unmarshal activity from message:", err)
+	var activity *apub.Activity
+	var bmsg []byte
+	var err error
+	if jflag {
+		var err error
+		activity, err = apub.Decode(os.Stdin)
+		if err != nil {
+			log.Fatalln("decode activity:", err)
+		}
+	} else {
+		bmsg, err = io.ReadAll(os.Stdin)
+		if err != nil {
+			log.Fatal(err)
+		}
+		msg, err := mail.ReadMessage(bytes.NewReader(bmsg))
+		if err != nil {
+			log.Fatal(err)
+		}
+		activity, err = apub.UnmarshalMail(msg)
+		if err != nil {
+			log.Fatalln("unmarshal activity from message:", err)
+		}
 	}
 
 	var remote []string
@@ -112,7 +126,10 @@ func main() {
 		// overwrite auto generated ID from mail clients
 		if !strings.HasPrefix(activity.ID, "https://") {
 			activity.ID = from.Outbox + "/" + strconv.Itoa(int(activity.Published.Unix()))
-			bmsg, _ = apub.MarshalMail(activity)
+			bmsg, err = apub.MarshalMail(activity)
+			if err != nil {
+				log.Fatalf("remarshal %s activity to mail: %v", activity.Type, err)
+			}
 		}
 
 		// Permit this activity for the public, too;
