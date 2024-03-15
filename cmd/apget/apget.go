@@ -3,19 +3,19 @@
 //
 // Its usage is:
 //
-// 	apget [-m] url
+// 	apget [-j] url
 //
 // The flags understood are:
 //
-//	-m
-//		Print the activity as a RFC5322 message.
-// 		The default is indented JSON.
+//	-j
+//		Print the activity as indented JSON.
+// 		The default is a RFC5322 message.
 //
 // # Examples
 //
 // Deliver a Mastodon post to a local user using apsend:
 //
-// 	apget -m https://hachyderm.io/@otl/112093503066930591 | apsend otl
+// 	apget https://hachyderm.io/@otl/112093503066930591 | apsend otl
 package main
 
 import (
@@ -27,14 +27,14 @@ import (
 	"olowe.co/apub"
 )
 
-var mflag bool
+var jflag bool
 
 func init() {
-	flag.BoolVar(&mflag, "m", false, "format as mail")
+	flag.BoolVar(&jflag, "j", false, "format as json")
 	flag.Parse()
 }
 
-const usage = "apget [-m] url"
+const usage = "apget [-j] url"
 
 func main() {
 	if len(flag.Args()) != 1 {
@@ -44,19 +44,19 @@ func main() {
 	if err != nil {
 		log.Fatalf("lookup %s: %v", flag.Args()[0], err)
 	}
-	if mflag {
-		msg, err := apub.MarshalMail(activity)
-		if err != nil {
-			log.Println(err)
-		}
-		if _, err := os.Stdout.Write(msg); err != nil {
-			log.Fatal(err)
+	if jflag {
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "	")
+		if err := enc.Encode(activity); err != nil {
+			os.Exit(1)
 		}
 		return
 	}
-	enc := json.NewEncoder(os.Stdout)
-	enc.SetIndent("", "	")
-	if err := enc.Encode(activity); err != nil {
-		os.Exit(1)
+	msg, err := apub.MarshalMail(activity)
+	if err != nil {
+		log.Println(err)
+	}
+	if _, err := os.Stdout.Write(msg); err != nil {
+		log.Fatal(err)
 	}
 }

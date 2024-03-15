@@ -78,13 +78,19 @@ That means understanding ActivityPub better.</p>
 a collection of small programs operate on files and streams,
 relaying messages out to the Internet or
 delivering to mailboxes on the filesystem.
-But it&#8217;s so much more limited and poorly designed than upas that I was hesitant to even write this bit!</p>
+(But it&#8217;s so much more limited and poorly designed than upas that I was hesitant to even write this bit!)</p>
+<p>An important difference from existing Fediverse software is that
+<strong>apas</strong> only represents Activities as messages.
+There are no application-specific data structures like
+posts, toots, comments, or pages.
+Messages can be files in a filesystem,
+which simplifies implementation significantly.</p>
 <h3 id="2.1-messages">2.1 Messages</h3>
 <p><strong>Apas</strong> marshals ActivityPub objects into <a href="https://www.rfc-editor.org/rfc/rfc5322">RFC5322</a> messages and vice-versa.</p>
 <p>The <a href="https://www.w3.org/TR/activitystreams-vocabulary/#dfn-note">Note Activity</a> is probably the most recognisable object exchanged by ActivityPub servers.
 They are represented as comments by Lemmy, and posts (toots?) by Mastodon.
 For instance, imagine a reply from Alex to Bowie talking about motorcycle tyres.
-It&#8217;s passed around as JSON-encoded data like so:</p>
+It&#8217;s passed around the Fediverse as JSON-encoded data like this:</p>
 <pre><code>{
     "type": "Note"
     "id": "https:&#47;&#47;apub.example.com&#47;alex&#47;12345678",
@@ -97,7 +103,7 @@ It&#8217;s passed around as JSON-encoded data like so:</p>
 }
 </code></pre>
 <p>For <strong>apas</strong> this is equivalent to the mail message:</p>
-<pre><code>From: "Alice " &#60;alice@apub.example.com&#62;
+<pre><code>From: "Alex " &#60;alex@apub.example.com&#62;
 To: "Bowie" &#60;bowie@apas.test.example&#62;
 CC: "Bowie (followers)" &#60;bowie+followers@apas.test.example&#62;
 Message-ID: &#60;https:&#47;&#47;apub.example.com&#47;alex&#47;12345678&#62;
@@ -106,17 +112,21 @@ Subject: Thoughts on 50&#47;50 tyres
 
 But what if you don&#39;t know when you want to ride off-road?
 </code></pre>
-<p>Critically the mail message is written and read by people; not machines.
+<p>Unlike other Fediverse software,
+the message to be distributed is written and read by people; not just machines.
 For developers, administrators, and advanced users, seeing data like
-this builds familiarity with the actual data exchanged and behaviour
-between systems.</p>
+this builds familiarity with the behaviour between systems,
+and facilitates communication.
+We go from &#8220;why can I see my toot on Kbin but not on Pleroma?&#8221; to
+&#8220;why didn&#8217;t your Pleroma server receive my message?&#8221;
+which is a much easier question to answer; it&#8217;s what the systems are actually doing.</p>
 <p>If there was only one thing to take away from <strong>apas</strong>, it&#8217;s that
-familiarity with data over the code is hugely helpful for
-troubleshooting and understanding. Especially when typical bug reports
-consist of URLs to web apps (or even just screenshots!) trying to
-explain what was sent versus what was received. That&#8217;s before we we
-even address what could be in a database, itself requiring its own
-query language and tightly-controlled administrative access to read.</p>
+familiarity with data over an API is hugely helpful for
+troubleshooting. Especially when typical bug reports consist of URLs
+to irrelevant web apps (or even just screenshots!) trying to explain
+what was sent versus what was received. That&#8217;s before we we even
+address what could be in a database, itself requiring its own query
+language and tightly-controlled administrative access to read.</p>
 <h3 id="2.2.-sending">2.2. Sending</h3>
 <p>Presenting posts, comments, notes, etc. as a mail message immediately
 clarifies a big source of confusion with existing systems:
@@ -130,20 +140,22 @@ recipients are, if any.</p>
 (or even any old text editor!)
 provide an interactive way to test other AP systems.
 For instance, we can easily test how the message is received if we address the recipient in the <code>CC</code> field instead of <code>To</code>,
-or if we list the same recipient in both fields. Or 20 times over.
-apas could report deliverability errors either:</p>
+or if we list the same recipient 20 times in both fields.
+<strong>Apas</strong> could report deliverability errors either:</p>
 <ul>
 <li>immediately, or</li>
 <li>as a bounced message</li>
 </ul>
-<p>At the moment, apas returns complete error messages immediately.
+<p>At the moment, error messages are returned immediately.
 This has provided a pleasant enough testing experience
 that makes learning ActivityPub an interactive process,
-right in the mail client, especially compared with the
+directly from any mail client, especially compared with the
 usual drudgery of sifting through logs of big web applications.</p>
-<p>Sending is comprised two programs each playing its own role:
-a submission program accepts messages from authorised users,
-and a mailer handles sending messages to the Internet.</p>
+<p>Sending is involves two programs each playing its own role:</p>
+<ol>
+<li>Asubmission program accepts messages from authorised users, and</li>
+<li>A mailer handles sending messages to the Internet.</li>
+</ol>
 <p><img src="send.png" alt="" /></p>
 <h4 id="2.2.1.-submission">2.2.1. Submission</h4>
 <p>Messages are submitted to a server running <code>apsubmit</code>.
@@ -165,7 +177,7 @@ and the built-in Mail app on my iPhone for replies.
 I&#8217;ll leave others to come up with more ideas;
 keep in mind weather stations, printers, video records can usually
 send email but definitely cannot speak ActivityPub!</p>
-<p>In the interest of fast feedback,
+<p>For fast feedback,
 <code>apsubmit</code> takes advantage of the <code>RCPT</code> stage of the SMTP transaction.
 It verifies that listed recipients exist and have inboxes we can target.
 This is in contrast with e.g. Mastodon,
@@ -182,17 +194,50 @@ which will always accept creating the following post:</p>
 Mastodon never notifies of any delivery errors.
 We could ask the server administrators to trawl through the server&#8217;s logs for us,
 or ask <code>johnny</code> and <code>deleteduser</code> out-of-band if they got our message.
-Accounting for these types of error at submission time obviates all that extra work.</p>
+Accounting for some common errors at submission time obviates that extra work.</p>
 <h4 id="2.2.2-mailer">2.2.2 Mailer</h4>
 <p>Sending messages is performed by a command-line utility called <code>apsend</code>.
 <code>apsend</code> reads a message from standard input and disposes of it based on the recipients.
-If the above message was in a file called &#8220;note.eml&#8221;,
+If the above message from Alex to Bowie was in a file called &#8220;note.eml&#8221;,
 we could send it with the following shell command:</p>
 <pre><code>apsend -t &#60; file.eml
 </code></pre>
-<p><code>apsend</code> is not intended to be executed directly by users.</p>
+<p>In general, <code>apsend</code> is not intended to be executed directly.
+Instead, a frontend like an email client (sending via SMTP)
+or a tool like Plan 9&#8217;s <a href="https://9p.io/magic/man2html?man=marshal&amp;sect=1">marshal(1)</a>
+should be used which take care of adding entries to and formatting the
+header correctly.</p>
 <h3 id="2.3-receiving">2.3 Receiving</h3>
-<p><code>apserve</code> provides a typical HTTP server for a minimal ActivityPub service.
+<p>Core to <strong>apas</strong> is handling ActivityPub objects as files in a filesystem.
+This reveals there are many different ways to retrieve Activitity from the Fediverse
+beyond the typical process of servers sending Activity to an Actor&#8217;s inbox.
+<strong>Apas</strong> of course supports this (see 2.3.2),
+but it&#8217;s worth mentioning other techniques to show how flexible
+working with the Fediverse can be.
+It may also help clarify discussions on user privacy.</p>
+<h4 id="2.3.1-direct">2.3.1 Direct</h4>
+<p>This was the first implementation of receiving ActivityPub objects for <strong>apas</strong>.
+The command <code>apget</code> fetches the Activity at a URL, then writes it to the standard output.
+Throughout testing, I ran the tool in shell scripts like the below to deliver messages to my inbox:</p>
+<pre><code>apget https:&#47;&#47;apub.example.com&#47;alex&#47;12345678 | apsend otl
+</code></pre>
+<p>Little shell scripts can fetch a series of posts:</p>
+<pre><code>for i in `seq 12345671 12345678`
+do
+    apget -m https:&#47;&#47;apub.example.com&#47;alex&#47;$i
+done
+</code></pre>
+<p>Obviously this is inefficient compared to other methods,
+but we&#8217;re not Google.
+Handy ad-hoc testing.</p>
+<h4 id="2.3.2-targeting-the-activitypub-inbox">2.3.2 Targeting the ActivityPub inbox</h4>
+<p>This is the typical ActivityPub process.
+For example, someone could mention us in a Mastodon post:</p>
+<pre><code>@bowie@apas.test.example hope apas is going OK!
+</code></pre>
+<p>Which results in the Mastodon server sending Activity to bowie&#8217;s Actor inbox.
+In <strong>apas</strong>,
+<code>apserve</code> provides a typical HTTP server for a minimal ActivityPub service.
 It is responsible for:</p>
 <ul>
 <li>receiving Activity over HTTP (ActivityPub inbox)</li>
@@ -204,7 +249,99 @@ It is responsible for:</p>
 <p>Delivery is not handled by <code>apserve</code>.
 Instead, <code>apserve</code> converts Activities to mail messages,
 and passes them on to <code>apsend</code> for delivery.</p>
-<h4 id="2.3.1-filtering-spam">2.3.1 Filtering, spam</h4>
+<h4 id="2.3.2-following">2.3.2 Following</h4>
+<p><a href="https://www.w3.org/TR/activitystreams-vocabulary/#dfn-follow">Follows</a> can be sent using <code>apsend</code>.
+Because Follows are not represented clearly as mail,
+the Follow needs to be written as JSON directly.
+For example, for user bowie to follow alex:</p>
+<pre><code>{
+    "@context": "https:&#47;&#47;www.w3.org&#47;ns&#47;activitystreams"
+    "actor": "https:&#47;&#47;apas.example.org&#47;bowie",
+    "type": "Follow",
+    "object": "https:&#47;&#47;apub.example.com&#47;alex"
+}
+</code></pre>
+<p>then piped to <code>apsend</code>:</p>
+<pre><code>apsend -j alex@apub.example.com &#60; follow.json
+</code></pre>
+<p>Wrapped up in X-line shell script named <code>apfollow</code>,
+following and unfollowing is equivalent to running the commands:</p>
+<pre><code>apfollow alex@apub.example.com
+apfollow -u alex@apub.example.com
+</code></pre>
+<h4 id="2.3.3-rssatom-feeds">2.3.3 RSS&#47;Atom feeds</h4>
+<p>Many ActivityPub servers also make content available via <a href="https://www.rfc-editor.org/rfc/rfc4287">web feeds</a>.
+This could be an efficient way to fetch content using a battle-tested format
+from resource-constrained servers.</p>
+<p>One possible tool is something that manages reading new entries in a feed.
+For each entry, it extracts the ActivityPub object ID from the
+ <code>&#60;guid&#62;</code> or <code>&#60;link&#62;</code> tag for RSS and Atom respectively.</p>
+<pre><code>&#60;entry&#62;
+    &#60;title&#62;Atom-Powered Robots Run Amok&#60;&#47;title&#62;
+    &#60;link href="https:&#47;&#47;apub.example.com&#47;alex&#47;12345678"&#47;&#62;
+    &#60;id&#62;urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a&#60;&#47;id&#62;
+    &#60;updated&#62;2023-12-13T18:30:02Z&#60;&#47;updated&#62;
+    &#60;summary&#62;hello, world!&#60;&#47;summary&#62;
+&#60;&#47;entry&#62;
+</code></pre>
+<h4 id="2.3.4-fediverse-software-http-apis">2.3.4 Fediverse software HTTP APIs</h4>
+<p>Many existing systems provide a HTTP API which provides a convenient
+way of finding content based on some application-specific logic e.g.
+a group, full-text search, or time created.</p>
+<p>An early <strong>apas</strong> prototype was really just a Python script which
+synchronised my <a href="like%20Mastodon">GoToSocial</a> timeline with a directory on disk.
+In short:</p>
+<pre><code>for status in timeline():
+    note = apget(status.source_id)
+    with open(status.id) as f:
+        apub2email(f, note)
+</code></pre>
+<h4 id="2.3.5-takeaway">2.3.5 Takeaway</h4>
+<p>As mentioned already,
+core to <strong>apas</strong> is handling ActivityPub objects
+as text streams and
+files in a filesystem.
+It&#8217;s not meant to be the most performant system (not to say that it&#8217;s slow),
+but it lets us develop an understanding of the ActivityPub protocol
+and focus on the data over APIs via quick prototyping.</p>
+<h4 id="2.x-todo-filtering-spam">2.x TODO Filtering, spam?</h4>
+<ul>
+<li>text streams</li>
+<li>small portable programs instead of plugins to growing systems</li>
+</ul>
+<h3 id="2.4-reading">2.4 Reading</h3>
+<p>Messages are stored in the <a href="https://en.wikipedia.org/wiki/Maildir">Maildir</a> format; one message per file.
+This is not an important part of the system.
+Maildir is used only because of the easy implementation for <code>apsend</code>;
+it just neads to create create files.</p>
+<p>How messages are presented to users –
+no matter how they are stored –
+is a job for which software has been written for decades already.</p>
+<p>Here are some that are being used or</p>
+<h4 id="2.4.1-">2.4.1 <code>read()</code></h4>
+<p>No, really.</p>
+<p>During development, being able to just run cat(1) on a file to debug Content-Type encoding bug
+was a breath of fresh air when compared to what is more common in web development.</p>
+<p>That is, running a unit test which queries a relational database running in a container in a virtual machine hopefully all configured correctly, then marshalling that into the application&#8217;s unique data structure, to ActivityPub, then finally JSON-encoded (half-joking).</p>
+<h4 id="2.4.2-existing-solutions">2.4.2 Existing solutions</h4>
+<p><strong>Maildir</strong>. Some clients can interact with Maildir directly, like <a href="http://www.mutt.org">mutt</a>.</p>
+<p><strong>IMAP</strong>. The obvious and most popular method for accessing mailboxes over the network. Dovecot works well. IMAP is very widely supported by mail clients.</p>
+<p><strong>NNTP&#47;Usenet</strong>.
+Throughout this document I&#8217;ve referred to &#8220;mail messages&#8221;.
+But the so-called &#8220;Internet Message Format&#8221; described in RFC 5322 is also used by
+<a href="https://en.wikipedia.org/wiki/Usenet">Usenet</a> via a protocol known as <a href="https://datatracker.ietf.org/doc/html/rfc3977">NNTP</a>.
+The protocol is a simple line-based text protocol
+with many open-source libraries available.
+Serving Fediverse messages from a filesystem over NNTP would be a fun project.
+Similar to how the Linux Kernel Mailing list is available over NNTP at <code>nntp.lore.kernel.org</code>.</p>
+<p><strong>Mailing list archive web interfaces</strong>.
+Finally yet another opportunity to give those old Perl scripts another lease of life.</p>
+<p><strong>upasfs(4)</strong>.
+<a href="http://doc.cat-v.org/bell_labs/upas_mail_system/">upas</a> is the system I studied to implement <strong>apas</strong>.
+Messages could be relayed from <code>apsend</code> to <code>upas&#47;send</code>,
+or the Maildir could be converted to mdir(6).
+Then we would have a <em>real</em> filesystem interface over 9P.
+Another project for another time.</p>
 <h2 id="3.-workarounds-limitations">3. Workarounds &#38; limitations</h2>
 <p>The mapping between Activity objects, mail messages,
 ActivityPub HTTP methods, and SMTP transactions
@@ -237,6 +374,10 @@ the address <a href="mailto:user+followers@example.com">user+followers@example.c
 These followers addresses cannot be resolved by WebFinger.</p>
 <p>Likes and Dislikes are silently dropped by <code>apserve</code>.
 The reader can decide whether this is a workaround, feature, or bug.</p>
+<p>Accept and Rejects from Follow requests can be received via ActivityPub
+and delivered as mail but for notifications only.
+The reverse does not work;
+<strong>apas</strong> cannot read a Follow request from a mail message.</p>
 <p>To simplifly delivery to local mailboxes,
 Actors served by <code>apserve</code> have no shared inbox&#47;outbox.
 Fortunately shared inbox endpoints are inteded as a performance opimitisation for

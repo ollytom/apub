@@ -58,7 +58,7 @@ func init() {
 	log.SetPrefix("apsend: ")
 	flag.BoolVar(&Fflag, "F", false, "file a copy for the sender")
 	flag.BoolVar(&tflag, "t", false, "read recipients from message")
-	flag.BoolVar(&jflag, "t", false, "read ActivityPub JSON")
+	flag.BoolVar(&jflag, "j", false, "read ActivityPub JSON")
 	flag.Parse()
 }
 
