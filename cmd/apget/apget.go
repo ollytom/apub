@@ -1,5 +1,5 @@
 // Command apget retrieves the ActivityPub object accessible at url
-// and prints a JSON-encoded representation to the standard output.
+// and prints a formatted representation to the standard output.
 //
 // Its usage is:
 //
@@ -8,7 +8,8 @@
 // The flags understood are:
 //
 //	-m
-//		Print the activity as a RFC5322 message
+//		Print the activity as a RFC5322 message.
+// 		The default is indented JSON.
 //
 // # Examples
 //
