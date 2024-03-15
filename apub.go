@@ -39,7 +39,7 @@ var ErrNotExist = errors.New("no such activity")
 // See Activity Streams 2.0, section 4.1.
 type Activity struct {
 	AtContext    string     `json:"@context"`
-	ID           string     `json:"id"`
+	ID           string     `json:"id,omitempty"`
 	Type         string     `json:"type"`
 	Name         string     `json:"name,omitempty"`
 	Actor        string     `json:"actor,omitempty"`
@@ -59,14 +59,14 @@ type Activity struct {
 		Content   string `json:"content,omitempty"`
 		MediaType string `json:"mediaType,omitempty"`
 	} `json:"source,omitempty"`
-	PublicKey *PublicKey      `json:"publicKey,omitempty"`
-	Audience  string          `json:"audience,omitempty"`
-	Href      string          `json:"href,omitempty"`
-	Tag       []Activity      `json:"tag,omitempty"`
+	PublicKey *PublicKey `json:"publicKey,omitempty"`
+	Audience  string     `json:"audience,omitempty"`
+	Href      string     `json:"href,omitempty"`
+	Tag       []Activity `json:"tag,omitempty"`
 	// Contains a JSON-encoded Activity, or a URL as a JSON string
 	// pointing to an Activity. Use Activity.Unwrap() to access
 	// the enclosed, decoded value.
-	Object    json.RawMessage `json:"object,omitempty"`
+	Object json.RawMessage `json:"object,omitempty"`
 }
 
 func (act *Activity) UnmarshalJSON(b []byte) error {
