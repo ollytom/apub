@@ -112,10 +112,13 @@ func UnmarshalMail(msg *mail.Message) (*Activity, error) {
 			return nil, fmt.Errorf("webfinger To addresses: %w", err)
 		}
 		wto = make([]string, len(actors))
-		tags = make([]Activity, len(actors))
 		for i, a := range actors {
 			addr := strings.Trim(to[i].Address, "<>")
-			tags[i] = Activity{Type: "Mention", Href: a.ID, Name: "@" + addr}
+			if strings.Contains(addr, "+followers") {
+				wto[i] = a.Followers
+				continue
+			}
+			tags = append(tags, Activity{Type: "Mention", Href: a.ID, Name: "@" + addr})
 			wto[i] = a.ID
 		}
 	}
@@ -130,6 +133,10 @@ func UnmarshalMail(msg *mail.Message) (*Activity, error) {
 		}
 		wcc = make([]string, len(actors))
 		for i, a := range actors {
+			if strings.Contains(cc[i].Address, "+followers") {
+				wcc[i] = a.Followers
+				continue
+			}
 			wcc[i] = a.ID
 		}
 	}
