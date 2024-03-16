@@ -151,10 +151,10 @@ type PublicKey struct {
 // Address generates the most likely address of the Actor.
 // The Actor's name (not the username) is used as the address' proper name, if present.
 // Implementors should verify the address using WebFinger.
-// For example, the followers address for Actor ID
+// For example, the address for the Actor ID
 // https://hachyderm.io/users/otl is:
 //
-//	"Oliver Lowe" <otl+followers@hachyderm.io>
+//	"Oliver Lowe" <otl@hachyderm.io>
 func (a *Actor) Address() *mail.Address {
 	if a.Username == "" && a.Name == "" {
 		return &mail.Address{"", a.ID}
