@@ -54,7 +54,7 @@ func main() {
 	}
 	msg, err := apub.MarshalMail(activity)
 	if err != nil {
-		log.Println(err)
+		log.Println("marshal to mail:", err)
 	}
 	if _, err := os.Stdout.Write(msg); err != nil {
 		log.Fatal(err)
