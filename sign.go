@@ -19,6 +19,9 @@ const requiredSigHeaders = "(request-target) host date digest"
 // Sign signs the given HTTP request with the matching private key of the
 // public key available at pubkeyURL.
 func Sign(req *http.Request, key *rsa.PrivateKey, pubkeyURL string) error {
+	if pubkeyURL == "" {
+		return fmt.Errorf("no pubkey url")
+	}
 	date := time.Now().UTC().Format(http.TimeFormat)
 	req.Header.Set("Date", date)
 	hash := sha256.New()
