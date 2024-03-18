@@ -81,7 +81,7 @@ func marshalMail(activity *Activity, client *Client) (*mail.Message, error) {
 	}
 	msg.Header["CC"] = addrs
 
-	msg.Header["Date"] = []string{activity.Published.Format(time.RFC822)}
+	msg.Header["Date"] = []string{activity.Published.Format(time.RFC1123Z)}
 	msg.Header["Message-ID"] = []string{"<" + activity.ID + ">"}
 	msg.Header["Subject"] = []string{activity.Name}
 	if activity.Audience != "" {
