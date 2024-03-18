@@ -10,72 +10,111 @@ import (
 	"time"
 )
 
-func MarshalMail(activity *Activity) ([]byte, error) {
-	buf := &bytes.Buffer{}
-
-	from, err := LookupActor(activity.AttributedTo)
+func MarshalMail(activity *Activity, client *Client) ([]byte, error) {
+	msg, err := marshalMail(activity, client)
 	if err != nil {
-		return nil, fmt.Errorf("lookup actor %s: %w", activity.AttributedTo, err)
+		return nil, err
 	}
-	fmt.Fprintf(buf, "From: %s\n", from.Address())
-
-	var rcpt []string
-	for _, u := range activity.To {
-		if u == PublicCollection {
-			continue
-		}
-		actor, err := LookupActor(u)
-		if err != nil {
-			return nil, fmt.Errorf("lookup actor %s: %w", u, err)
-		}
-		rcpt = append(rcpt, actor.Address().String())
-	}
-	fmt.Fprintln(buf, "To:", strings.Join(rcpt, ", "))
-
-	var rcptcc []string
-	if activity.CC != nil {
-		for _, u := range activity.CC {
-			if u == PublicCollection {
-				continue
-			} else if u == from.Followers {
-				rcptcc = append(rcptcc, from.FollowersAddress().String())
-				continue
-			}
-			actor, err := LookupActor(u)
-			if err != nil {
-				return nil, fmt.Errorf("lookup actor %s: %w", u, err)
-			}
-			rcptcc = append(rcptcc, actor.Address().String())
-		}
-		fmt.Fprintln(buf, "CC:", strings.Join(rcptcc, ", "))
-	}
-
-	fmt.Fprintf(buf, "Date: %s\n", activity.Published.Format(time.RFC822))
-	fmt.Fprintf(buf, "Message-ID: <%s>\n", activity.ID)
-	if activity.Audience != "" {
-		fmt.Fprintf(buf, "List-ID: <%s>\n", activity.Audience)
-	}
-	if activity.InReplyTo != "" {
-		fmt.Fprintf(buf, "References: <%s>\n", activity.InReplyTo)
-	}
-
-	body := &activity.Content
-	if activity.Source.Content != "" && activity.Source.MediaType == "text/markdown" {
-		body = &activity.Source.Content
-		fmt.Fprintln(buf, "Content-Type: text/plain; charset=utf-8")
-	} else if activity.MediaType == "text/markdown" {
-		fmt.Fprintln(buf, "Content-Type: text/plain; charset=utf-8")
-	} else {
-		fmt.Fprintln(buf, "Content-Type:", "text/html; charset=utf-8")
-	}
-	fmt.Fprintln(buf, "Subject:", activity.Name)
-	fmt.Fprintln(buf)
-	fmt.Fprintln(buf, *body)
-	_, err = mail.ReadMessage(bytes.NewReader(buf.Bytes()))
-	return buf.Bytes(), err
+	return encodeMsg(msg), nil
 }
 
-func UnmarshalMail(msg *mail.Message) (*Activity, error) {
+func marshalMail(activity *Activity, client *Client) (*mail.Message, error) {
+	if client == nil {
+		client = &DefaultClient
+	}
+
+	msg := new(mail.Message)
+	msg.Header = make(mail.Header)
+	var actors []Actor
+	from, err := client.LookupActor(activity.AttributedTo)
+	if err != nil {
+		return nil, fmt.Errorf("build From: lookup actor %s: %w", activity.AttributedTo, err)
+	}
+	actors = append(actors, *from)
+	msg.Header["From"] = []string{from.Address().String()}
+
+	var addrs, collections []string
+	for _, id := range activity.To {
+		if id == PublicCollection {
+			continue
+		}
+
+		a, err := client.LookupActor(id)
+		if err != nil {
+			return nil, fmt.Errorf("build To: lookup actor %s: %w", id, err)
+		}
+		if a.Type == "Collection" || a.Type == "OrderedCollection" {
+			collections = append(collections, a.ID)
+		} else {
+			addrs = append(addrs, a.Address().String())
+			actors = append(actors, *a)
+		}
+	}
+	for _, id := range collections {
+		if i := indexFollowers(actors, id); i >= 0 {
+			addrs = append(addrs, actors[i].FollowersAddress().String())
+		}
+	}
+	msg.Header["To"] = addrs
+
+	addrs, collections = []string{}, []string{}
+	for _, id := range activity.CC {
+		if id == PublicCollection {
+			continue
+		}
+
+		a, err := client.LookupActor(id)
+		if err != nil {
+			return nil, fmt.Errorf("build CC: lookup actor %s: %w", id, err)
+		}
+		if a.Type == "Collection" || a.Type == "OrderedCollection" {
+			collections = append(collections, a.ID)
+			continue
+		}
+		addrs = append(addrs, a.Address().String())
+		actors = append(actors, *a)
+	}
+	for _, id := range collections {
+		if i := indexFollowers(actors, id); i >= 0 {
+			addrs = append(addrs, actors[i].FollowersAddress().String())
+		}
+	}
+	msg.Header["CC"] = addrs
+
+	msg.Header["Date"] = []string{activity.Published.Format(time.RFC822)}
+	msg.Header["Message-ID"] = []string{"<" + activity.ID + ">"}
+	msg.Header["Subject"] = []string{activity.Name}
+	if activity.Audience != "" {
+		msg.Header["List-ID"] = []string{"<" + activity.Audience + ">"}
+	}
+	if activity.InReplyTo != "" {
+		msg.Header["In-Reply-To"] = []string{"<" + activity.InReplyTo + ">"}
+	}
+
+	msg.Body = strings.NewReader(activity.Content)
+	msg.Header["Content-Type"] = []string{"text/html; charset=utf-8"}
+	if activity.Source.Content != "" && activity.Source.MediaType == "text/markdown" {
+		msg.Body = strings.NewReader(activity.Source.Content)
+		msg.Header["Content-Type"] = []string{"text/plain; charset=utf-8"}
+	} else if activity.MediaType == "text/markdown" {
+		msg.Header["Content-Type"] = []string{"text/plain; charset=utf-8"}
+	}
+	return msg, nil
+}
+
+func indexFollowers(actors []Actor, id string) int {
+	for i := range actors {
+		if actors[i].Followers == id {
+			return i
+		}
+	}
+	return -1
+}
+
+func UnmarshalMail(msg *mail.Message, client *Client) (*Activity, error) {
+	if client == nil {
+		client = &DefaultClient
+	}
 	ct := msg.Header.Get("Content-Type")
 	if strings.HasPrefix(ct, "multipart") {
 		return nil, fmt.Errorf("cannot unmarshal from multipart message")
@@ -93,7 +132,7 @@ func UnmarshalMail(msg *mail.Message) (*Activity, error) {
 	if err != nil {
 		return nil, fmt.Errorf("parse From: %w", err)
 	}
-	wfrom, err := Finger(from[0].Address)
+	wfrom, err := client.Finger(from[0].Address)
 	if err != nil {
 		return nil, fmt.Errorf("webfinger From: %w", err)
 	}
@@ -107,7 +146,7 @@ func UnmarshalMail(msg *mail.Message) (*Activity, error) {
 		if err != nil {
 			return nil, fmt.Errorf("parse To address list: %w", err)
 		}
-		actors, err := fingerAll(to)
+		actors, err := client.fingerAll(to)
 		if err != nil {
 			return nil, fmt.Errorf("webfinger To addresses: %w", err)
 		}
@@ -127,7 +166,7 @@ func UnmarshalMail(msg *mail.Message) (*Activity, error) {
 		if err != nil {
 			return nil, fmt.Errorf("parse CC address list: %w", err)
 		}
-		actors, err := fingerAll(cc)
+		actors, err := client.fingerAll(cc)
 		if err != nil {
 			return nil, fmt.Errorf("webfinger CC addresses: %w", err)
 		}
@@ -145,6 +184,7 @@ func UnmarshalMail(msg *mail.Message) (*Activity, error) {
 	if _, err := io.Copy(buf, msg.Body); err != nil {
 		return nil, fmt.Errorf("read message body: %v", err)
 	}
+	content := strings.TrimSpace(strings.ReplaceAll(buf.String(), "\r", ""))
 
 	return &Activity{
 		AtContext:    NormContext,
@@ -154,7 +194,7 @@ func UnmarshalMail(msg *mail.Message) (*Activity, error) {
 		CC:           wcc,
 		MediaType:    "text/markdown",
 		Name:         strings.TrimSpace(msg.Header.Get("Subject")),
-		Content:      strings.TrimSpace(buf.String()),
+		Content:      content,
 		InReplyTo:    strings.Trim(msg.Header.Get("In-Reply-To"), "<>"),
 		Published:    &date,
 		Tag:          tags,
@@ -162,9 +202,27 @@ func UnmarshalMail(msg *mail.Message) (*Activity, error) {
 }
 
 func SendMail(addr string, auth smtp.Auth, from string, to []string, activity *Activity) error {
-	msg, err := MarshalMail(activity)
+	msg, err := MarshalMail(activity, nil)
 	if err != nil {
 		return fmt.Errorf("marshal to mail message: %w", err)
 	}
 	return smtp.SendMail(addr, auth, from, to, msg)
+}
+
+func encodeMsg(msg *mail.Message) []byte {
+	buf := &bytes.Buffer{}
+	// Lead with "From", end with "Subject" to make some mail clients happy.
+	fmt.Fprintln(buf, "From:", msg.Header.Get("From"))
+	for k, v := range msg.Header {
+		switch k {
+		case "Subject", "From":
+			continue
+		default:
+			fmt.Fprintf(buf, "%s: %s\n", k, strings.Join(v, ", "))
+		}
+	}
+	fmt.Fprintln(buf, "Subject:", msg.Header.Get("Subject"))
+	fmt.Fprintln(buf)
+	io.Copy(buf, msg.Body)
+	return buf.Bytes()
 }

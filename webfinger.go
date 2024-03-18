@@ -10,7 +10,7 @@ import (
 
 // Finger wraps defaultClient.Finger.
 func Finger(address string) (*Actor, error) {
-	return defaultClient.Finger(address)
+	return DefaultClient.Finger(address)
 }
 
 // Finger is convenience method returning the corresponding Actor,
@@ -29,7 +29,7 @@ func (c *Client) Finger(address string) (*Actor, error) {
 	return nil, ErrNotExist
 }
 
-func fingerAll(alist []*mail.Address) ([]Actor, error) {
+func (c *Client) fingerAll(alist []*mail.Address) ([]Actor, error) {
 	actors := make([]Actor, len(alist))
 	for i, addr := range alist {
 		q := addr.Address
@@ -37,7 +37,7 @@ func fingerAll(alist []*mail.Address) ([]Actor, error) {
 			// strip "+followers" to get the regular address that can be fingered.
 			q = strings.Replace(addr.Address, "+followers", "", 1)
 		}
-		actor, err := Finger(q)
+		actor, err := c.Finger(q)
 		if err != nil {
 			return actors, fmt.Errorf("finger %s: %w", q, err)
 		}

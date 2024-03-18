@@ -4,21 +4,24 @@ import (
 	"bytes"
 	"crypto/rsa"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
+	"path"
 	"strings"
 )
 
-var defaultClient Client = Client{Client: http.DefaultClient}
+var DefaultClient Client = Client{Client: http.DefaultClient}
 
 func Lookup(id string) (*Activity, error) {
-	return defaultClient.Lookup(id)
+	return DefaultClient.Lookup(id)
 }
 
 func LookupActor(id string) (*Actor, error) {
-	return defaultClient.LookupActor(id)
+	return DefaultClient.LookupActor(id)
 }
 
 type Client struct {
@@ -38,15 +41,9 @@ func (c *Client) Lookup(id string) (*Activity, error) {
 		c.Client = http.DefaultClient
 	}
 
-	req, err := http.NewRequest(http.MethodGet, id, nil)
+	req, err := newRequest(http.MethodGet, id, nil, c.Key, c.PubKeyID)
 	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Accept", ContentType)
-	if c.Key != nil && c.PubKeyID != "" {
-		if err := Sign(req, c.Key, c.PubKeyID); err != nil {
-			return nil, fmt.Errorf("sign http request: %w", err)
-		}
+		return nil, fmt.Errorf("new request: %w", err)
 	}
 	resp, err := c.Do(req)
 	if err != nil {
@@ -66,7 +63,14 @@ func (c *Client) LookupActor(id string) (*Actor, error) {
 	if err != nil {
 		return nil, err
 	}
-	return activityToActor(activity), nil
+	switch activity.Type {
+	case "Application", "Group", "Organization", "Person", "Service":
+		return activityToActor(activity), nil
+	case "Collection", "OrderedCollection":
+		// probably followers. let caller work out what it wants to do
+		return activityToActor(activity), nil
+	}
+	return nil, fmt.Errorf("bad object Type %s", activity.Type)
 }
 
 func activityToActor(activity *Activity) *Actor {
@@ -93,13 +97,9 @@ func (c *Client) Send(inbox string, activity *Activity) (*Activity, error) {
 	if err != nil {
 		return nil, fmt.Errorf("encode outgoing activity: %w", err)
 	}
-	req, err := http.NewRequest(http.MethodPost, inbox, bytes.NewReader(b))
+	req, err := newRequest(http.MethodPost, inbox, bytes.NewReader(b), c.Key, c.PubKeyID)
 	if err != nil {
 		return nil, err
-	}
-	req.Header.Set("Content-Type", ContentType)
-	if err := Sign(req, c.Key, c.PubKeyID); err != nil {
-		return nil, fmt.Errorf("sign outgoing request: %w", err)
 	}
 	resp, err := c.Do(req)
 	if err != nil {
@@ -115,4 +115,21 @@ func (c *Client) Send(inbox string, activity *Activity) (*Activity, error) {
 		resp.Body.Close()
 		return nil, fmt.Errorf("non-ok response status %s", resp.Status)
 	}
+}
+
+func newRequest(method, url string, body io.Reader, key *rsa.PrivateKey, pubkeyURL string) (*http.Request, error) {
+	req, err := http.NewRequest(method, url, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", ContentType)
+	if body != nil {
+		req.Header.Set("Content-Type", ContentType)
+	}
+	if key != nil {
+		if err := Sign(req, key, pubkeyURL); err != nil {
+			return nil, fmt.Errorf("sign request: %w", err)
+		}
+	}
+	return req, nil
 }

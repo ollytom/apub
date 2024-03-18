@@ -73,11 +73,18 @@ func main() {
 		os.Exit(1)
 	}
 
+	current, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := sys.ClientFor(current.Username, sysName)
+	if err != nil {
+		log.Fatalf("apub cilent for %s: %v", current.Username, err)
+	}
+
 	var activity *apub.Activity
 	var bmsg []byte
-	var err error
 	if jflag {
-		var err error
 		activity, err = apub.Decode(os.Stdin)
 		if err != nil {
 			log.Fatalln("decode activity:", err)
@@ -91,42 +98,43 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		activity, err = apub.UnmarshalMail(msg)
+		activity, err = apub.UnmarshalMail(msg, client)
 		if err != nil {
 			log.Fatalln("unmarshal activity from message:", err)
 		}
 	}
 
 	var remote []string
+	var gotErr bool
 	for _, rcpt := range flag.Args() {
 		if !strings.Contains(rcpt, "@") {
 			if err := deliverLocal(rcpt, bmsg); err != nil {
+				gotErr = true
 				log.Printf("local delivery to %s: %v", rcpt, err)
 			}
 			continue
 		}
 		remote = append(remote, rcpt)
 	}
-
-	var gotErr bool
 	if len(remote) > 0 {
 		if !strings.HasPrefix(activity.AttributedTo, "https://"+sysName) {
 			log.Fatalln("cannot send activity from non-local actor", activity.AttributedTo)
 		}
-
-		from, err := apub.LookupActor(activity.AttributedTo)
+		from, err := client.LookupActor(activity.AttributedTo)
 		if err != nil {
 			log.Fatalf("lookup actor %s: %v", activity.AttributedTo, err)
 		}
-		client, err := sys.ClientFor(from.Username, sysName)
+		// everything we do from here onwards is on behalf of the sender,
+		// so outbound requests must be signed with the sender's key.
+		client, err = sys.ClientFor(from.Username, sysName)
 		if err != nil {
-			log.Fatalf("apub cilent for %s: %v", from.Username, err)
+			log.Fatalf("activitypub client for %s: %v", from.Username, err)
 		}
 
 		// overwrite auto generated ID from mail clients
 		if !strings.HasPrefix(activity.ID, "https://") {
 			activity.ID = from.Outbox + "/" + strconv.Itoa(int(activity.Published.Unix()))
-			bmsg, err = apub.MarshalMail(activity)
+			bmsg, err = apub.MarshalMail(activity, client)
 			if err != nil {
 				log.Fatalf("remarshal %s activity to mail: %v", activity.Type, err)
 			}
@@ -141,25 +149,15 @@ func main() {
 		}
 
 		// append outbound activities to the user's outbox so others can fetch it.
-		sysuser, err := user.Lookup(from.Username)
-		if err != nil {
-			log.Fatalf("lookup system user from %s: %v", activity.ID, err)
-		}
-		outbox := path.Join(sys.UserDataDir(sysuser), "outbox")
-		for _, a := range []*apub.Activity{activity, create} {
-			b, err := json.Marshal(a)
-			if err != nil {
-				log.Fatalf("encode %s: %v", activity.ID, err)
-			}
-			fname := path.Base(a.ID)
-			fname = path.Join(outbox, fname)
-			if err := os.WriteFile(fname, b, 0644); err != nil {
-				log.Fatalf("write activity to outbox: %v", err)
-			}
+		if err := sys.AppendToOutbox(from.Username, activity, create); err != nil {
+			log.Fatalf("append activities to outbox: %v", err)
 		}
 
 		for _, rcpt := range remote {
-			ra, err := apub.Finger(rcpt)
+			if strings.Contains(rcpt, "+followers") {
+				rcpt = strings.Replace(rcpt, "+followers", "", 1)
+			}
+			ra, err := client.Finger(rcpt)
 			if err != nil {
 				log.Printf("webfinger %s: %v", rcpt, err)
 				gotErr = true

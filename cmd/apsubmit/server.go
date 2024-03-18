@@ -9,9 +9,10 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"strings"
 
 	"github.com/emersion/go-smtp"
-	"olowe.co/apub"
+	"webfinger.net/go/webfinger"
 )
 
 type Backend struct {
@@ -58,7 +59,11 @@ func (s *Session) Rcpt(to string, opts *smtp.RcptOptions) error {
 	if err != nil {
 		return err
 	}
-	if _, err = apub.Finger(addr.Address); err != nil {
+	q := addr.Address
+	if strings.Contains(addr.Address, "+followers") {
+		q = strings.Replace(addr.Address, "+followers", "", 1)
+	}
+	if _, err := webfinger.Lookup(q, nil); err != nil {
 		return err
 	}
 	s.recipients = append(s.recipients, to)

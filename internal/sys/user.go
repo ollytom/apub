@@ -3,6 +3,7 @@ package sys
 import (
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"net/http"
@@ -117,4 +118,25 @@ func JRDFor(username, domain string) (*webfinger.JRD, error) {
 			},
 		},
 	}, nil
+}
+
+func AppendToOutbox(username string, activities ...*apub.Activity) error {
+	u, err := user.Lookup(username)
+	if err != nil {
+		return fmt.Errorf("lookup user: %w", err)
+	}
+	outbox := path.Join(UserDataDir(u), "outbox")
+	for _, a := range activities {
+		fname := path.Base(a.ID)
+		fname = path.Join(outbox, fname)
+		f, err := os.Create(fname)
+		if err != nil {
+			return fmt.Errorf("create file for %s: %w", a.ID, err)
+		}
+		if err := json.NewEncoder(f).Encode(a); err != nil {
+			return fmt.Errorf("encode %s: %w", a.ID, err)
+		}
+		f.Close()
+	}
+	return nil
 }

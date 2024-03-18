@@ -23,13 +23,17 @@ import (
 	"flag"
 	"log"
 	"os"
+	"os/user"
 
 	"olowe.co/apub"
+	"olowe.co/apub/internal/sys"
 )
 
 var jflag bool
 
 func init() {
+	log.SetFlags(0)
+	log.SetPrefix("apsend: ")
 	flag.BoolVar(&jflag, "j", false, "format as json")
 	flag.Parse()
 }
@@ -40,7 +44,17 @@ func main() {
 	if len(flag.Args()) != 1 {
 		log.Fatalln("usage:", usage)
 	}
-	activity, err := apub.Lookup(flag.Args()[0])
+	current, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := sys.ClientFor(current.Username, "apubtest2.srcbeat.com")
+	if err != nil {
+		log.Println("create activitypub client for %s: %v", current.Username, err)
+		log.Println("requests will not be signed")
+		client = &apub.DefaultClient
+	}
+	activity, err := client.Lookup(flag.Args()[0])
 	if err != nil {
 		log.Fatalf("lookup %s: %v", flag.Args()[0], err)
 	}
@@ -52,7 +66,7 @@ func main() {
 		}
 		return
 	}
-	msg, err := apub.MarshalMail(activity)
+	msg, err := apub.MarshalMail(activity, client)
 	if err != nil {
 		log.Println("marshal to mail:", err)
 	}

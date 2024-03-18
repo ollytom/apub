@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"olowe.co/apub"
+	"olowe.co/apub/internal/sys"
 )
 
 type server struct {
@@ -55,7 +56,11 @@ func (srv *server) relay(username string, activity *apub.Activity) {
 	}
 
 	cmd := exec.Command("apsend", username)
-	msg, err := apub.MarshalMail(activity)
+	client, err := sys.ClientFor(username, domain)
+	if err != nil {
+		log.Printf("activitypub client for %s: %v", username, err)
+	}
+	msg, err := apub.MarshalMail(activity, client)
 	if err != nil {
 		log.Printf("marshal %s %s to mail message: %v", activity.Type, activity.ID, err)
 		return

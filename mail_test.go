@@ -2,8 +2,12 @@ package apub
 
 import (
 	"bytes"
+	"errors"
 	"net/mail"
 	"os"
+	"reflect"
+	"sort"
+	"strings"
 	"testing"
 )
 
@@ -52,14 +56,41 @@ func TestMailAddress(t *testing.T) {
 }
 
 func TestMarshalMail(t *testing.T) {
-	var notes []string = []string{
-		"testdata/note/akkoma.json",
-		"testdata/note/lemmy.json",
-		"testdata/note/mastodon.json",
-		"testdata/page.json",
+	tests := []struct {
+		name       string
+		recipients []string
+	}{
+		{
+			"testdata/note/akkoma.json",
+			[]string{
+				"kariboka+followers@social.harpia.red",
+				"otl@apubtest2.srcbeat.com",
+			},
+		},
+		{
+			"testdata/note/lemmy.json",
+			[]string{
+				"Feathercrown@lemmy.world",
+				"technology@lemmy.world",
+			},
+		},
+		{
+			"testdata/note/mastodon.json",
+			[]string{
+				"otl+followers@hachyderm.io",
+				"selfhosted+followers@lemmy.world",
+				"selfhosted@lemmy.world",
+			},
+		},
+		{
+			"testdata/page.json",
+			[]string{
+				"technology@lemmy.world",
+			},
+		},
 	}
-	for _, name := range notes {
-		f, err := os.Open(name)
+	for _, tt := range tests {
+		f, err := os.Open(tt.name)
 		if err != nil {
 			t.Error(err)
 			continue
@@ -67,31 +98,53 @@ func TestMarshalMail(t *testing.T) {
 		defer f.Close()
 		a, err := Decode(f)
 		if err != nil {
-			t.Errorf("%s: decode activity: %v", name, err)
+			t.Errorf("%s: decode activity: %v", tt.name, err)
 			continue
 		}
-		b, err := MarshalMail(a)
+		b, err := MarshalMail(a, nil)
 		if err != nil {
-			t.Errorf("%s: marshal to mail message: %v", name, err)
+			t.Errorf("%s: marshal to mail message: %v", tt.name, err)
 			continue
 		}
 		msg, err := mail.ReadMessage(bytes.NewReader(b))
 		if err != nil {
-			t.Errorf("%s: read back message from marshalled activity: %v", name, err)
+			t.Errorf("%s: read back message from marshalled activity: %v", tt.name, err)
 			continue
 		}
-		p := make([]byte, 8)
-		n, err := msg.Body.Read(p)
-		if err != nil {
-			t.Errorf("%s: read message body: %v", name, err)
+		rcptto, err := msg.Header.AddressList("To")
+		if errors.Is(err, mail.ErrHeaderNotPresent) {
+			// whatever; sometimes the Activity has an empty slice.
+		} else if err != nil {
+			t.Errorf("%s: parse To addresses: %v", tt.name, err)
+			t.Log("raw value:", msg.Header.Get("To"))
+			continue
 		}
-		if n != len(p) {
+		rcptcc, err := msg.Header.AddressList("CC")
+		if errors.Is(err, mail.ErrHeaderNotPresent) {
+			// whatever; sometimes the Activity has an empty slice.
+		} else if err != nil {
+			t.Errorf("%s: parse CC addresses: %v", tt.name, err)
+			t.Log("raw value:", msg.Header.Get("CC"))
+			continue
+		}
+		t.Log(rcptto)
+		t.Log(rcptcc)
+		rcpts := make([]string, len(rcptto)+len(rcptcc))
+		for i, rcpt := range append(rcptto, rcptcc...) {
+			rcpts[i] = rcpt.Address
+		}
+		sort.Strings(rcpts)
+		if !reflect.DeepEqual(rcpts, tt.recipients) {
+			t.Errorf("%s: unexpected recipients, want %s got %s", tt.name, tt.recipients, rcpts)
+		}
+
+		p := make([]byte, 8)
+		if _, err := msg.Body.Read(p); err != nil {
+			// Pages have no content, so skip this case
 			if a.Type == "Page" {
-				// Pages have no content, so skip this case
 				continue
 			}
-			t.Errorf("%s: short read from body", name)
-			t.Log(string(p))
+			t.Errorf("%s: read message body: %v", tt.name, err)
 		}
 	}
 }
@@ -109,7 +162,7 @@ func TestUnmarshalMail(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping network calls to unmarshal mail message to Activity")
 	}
-	a, err := UnmarshalMail(msg)
+	a, err := UnmarshalMail(msg, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -120,4 +173,19 @@ func TestUnmarshalMail(t *testing.T) {
 	if a.Tag[0].Name != want {
 		t.Errorf("wanted tag name %s, got %s", want, a.Tag[0].Name)
 	}
+	if a.MediaType != "text/markdown" {
+		t.Errorf("wrong media type: wanted %s, got %s", "text/markdown", a.MediaType)
+	}
+	wantCC := []string{
+		"https://programming.dev/c/programming",
+		"https://programming.dev/u/starman",
+		"https://hachyderm.io/users/otl/followers",
+	}
+	if !reflect.DeepEqual(wantCC, a.CC) {
+		t.Errorf("wanted recipients %s, got %s", wantCC, a.CC)
+	}
+	if strings.Contains(a.Content, "\r") {
+		t.Errorf("activity content contains carriage returns")
+	}
+	t.Log(a)
 }
