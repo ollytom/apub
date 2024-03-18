@@ -25,27 +25,31 @@ func Sign(req *http.Request, key *rsa.PrivateKey, pubkeyURL string) error {
 	date := time.Now().UTC().Format(http.TimeFormat)
 	req.Header.Set("Date", date)
 	hash := sha256.New()
+	toSign := []string{"(request-target)", "host", "date"}
 	fmt.Fprintln(hash, "(request-target):", strings.ToLower(req.Method), req.URL.Path)
 	fmt.Fprintln(hash, "host:", req.URL.Hostname())
-	fmt.Fprintln(hash, "date:", date)
+	fmt.Fprintf(hash, "date: %s", date)
 
-	buf := &bytes.Buffer{}
-	io.Copy(buf, req.Body)
-	req.Body.Close()
-	req.Body = io.NopCloser(buf)
-	digest := sha256.Sum256(buf.Bytes())
-	d := "SHA-256=" + base64.StdEncoding.EncodeToString(digest[:])
-	fmt.Fprintf(hash, "digest: %s", d)
-	req.Header.Set("Digest", d)
-
+	if req.Body != nil {
+		// we're adding one more entry to our signature, so one more line.
+		fmt.Fprint(hash, "\n")
+		buf := &bytes.Buffer{}
+		io.Copy(buf, req.Body)
+		req.Body.Close()
+		req.Body = io.NopCloser(buf)
+		digest := sha256.Sum256(buf.Bytes())
+		d := "SHA-256=" + base64.StdEncoding.EncodeToString(digest[:])
+		toSign = append(toSign, "digest")
+		fmt.Fprintf(hash, "digest: %s", d)
+		req.Header.Set("Digest", d)
+	}
 	sig, err := rsa.SignPKCS1v15(rand.Reader, key, crypto.SHA256, hash.Sum(nil))
 	if err != nil {
 		return err
 	}
 	bsig := base64.StdEncoding.EncodeToString(sig)
 
-	sigKeys := "(request-target) host date digest"
-	val := fmt.Sprintf("keyId=%q,algorithm=%q,headers=%q,signature=%q", pubkeyURL, "rsa-sha256", sigKeys, bsig)
+	val := fmt.Sprintf("keyId=%q,algorithm=%q,headers=%q,signature=%q", pubkeyURL, "rsa-sha256", strings.Join(toSign, " "), bsig)
 	req.Header.Set("Signature", val)
 	return nil
 }
