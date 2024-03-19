@@ -22,7 +22,7 @@ type nodeUsage struct {
 
 type nodeUserCounts struct {
 	Total          int `json:"total"`
-	ActiveHalfYear int `json:"activeHalfYear"`
+	ActiveHalfYear int `json:"activeHalfyear"`
 	ActiveMonth    int `json:"activetMonth"`
 }
 
