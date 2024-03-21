@@ -14,8 +14,6 @@ import (
 	"time"
 )
 
-const requiredSigHeaders = "(request-target) host date digest"
-
 // Sign signs the given HTTP request with the matching private key of the
 // public key available at pubkeyURL.
 func Sign(req *http.Request, key *rsa.PrivateKey, pubkeyURL string) error {
