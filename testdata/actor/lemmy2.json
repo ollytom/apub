@@ -1,0 +1,34 @@
+{
+  "@context": [
+    "https://join-lemmy.org/context.json",
+    "https://www.w3.org/ns/activitystreams"
+  ],
+  "type": "Person",
+  "id": "https://lemmy.world/u/Ghostalmedia",
+  "preferredUsername": "Ghostalmedia",
+  "inbox": "https://lemmy.world/u/Ghostalmedia/inbox",
+  "outbox": "https://lemmy.world/u/Ghostalmedia/outbox",
+  "publicKey": {
+    "id": "https://lemmy.world/u/Ghostalmedia#main-key",
+    "owner": "https://lemmy.world/u/Ghostalmedia",
+    "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAu04IUDC0EqVJ+laJ3TQc\ng70fuBRhjdyT4rVnAR0oNRvOedNEW7aOgNWmC/q1Kgzmya83HKLq7ZvB6Z2kz/tS\nTObQ6P7+sDlDv9l65mmC+oi++ji/2X37HvPAJ71iKs+ky4IaGZ67ygoAwcEvfJnv\nBGELomuzwR0/CqILeSDeceAZYZVUploXKwzHdX4efQGrNWNzglZZNKkPuv4/s5Mi\nwEOUOmTVp7yjSMOGB6ImuSv81hDszIAxptUXXjDd5oEAcQR6gWHlwMG0V7Ih7jyM\nZeyJXWZ7kS3+4/mcpr1MAeupQBjHSjnFSOiE+1bG8OkKg7B6rhj2JKRcQDdSaHD8\nrwIDAQAB\n-----END PUBLIC KEY-----\n"
+  },
+  "name": "Ghostalmedia",
+  "summary": "<p>I’m from space!</p>\n",
+  "source": {
+    "content": "I'm from space!",
+    "mediaType": "text/markdown"
+  },
+  "icon": {
+    "type": "Image",
+    "url": "https://lemmy.world/pictrs/image/e78bbe19-dc73-490e-b9d9-c1ced432f002.jpeg"
+  },
+  "image": {
+    "type": "Image",
+    "url": "https://lemmy.world/pictrs/image/da47b488-57a9-49fc-9d58-4ad4d471e0cc.jpeg"
+  },
+  "endpoints": {
+    "sharedInbox": "https://lemmy.world/inbox"
+  },
+  "published": "2023-06-10T18:40:35.038963Z"
+}

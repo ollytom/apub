@@ -4,13 +4,10 @@ import (
 	"bytes"
 	"crypto/rsa"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
-	"path"
 	"strings"
 )
 
@@ -85,6 +82,7 @@ func activityToActor(activity *Activity) *Actor {
 		Followers: activity.Followers,
 		Published: activity.Published,
 		Summary:   activity.Summary,
+		Endpoints: activity.Endpoints,
 	}
 	if activity.PublicKey != nil {
 		actor.PublicKey = *activity.PublicKey

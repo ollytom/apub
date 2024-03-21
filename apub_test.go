@@ -2,6 +2,9 @@ package apub
 
 import (
 	"os"
+	"path"
+	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -59,5 +62,38 @@ func TestTag(t *testing.T) {
 		if !found {
 			t.Errorf("%s: did not find mention %s", tt.Name, tt.Mention)
 		}
+	}
+}
+
+func TestInboxes(t *testing.T) {
+	want := []string{
+		"https://apubtest2.srcbeat.com/otl/inbox",
+		"https://hachyderm.io/inbox",
+		"https://lemmy.world/inbox",
+		"https://social.harpia.red/inbox",
+	}
+
+	root := "testdata/actor"
+	dirent, err := os.ReadDir("testdata/actor")
+	if err != nil {
+		t.Fatal(err)
+	}
+	actors := make([]Actor, len(dirent))
+	for i, ent := range dirent {
+		f, err := os.Open(path.Join(root, ent.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+		a, err := DecodeActor(f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		actors[i] = *a
+	}
+	got := Inboxes(actors)
+	sort.Strings(got)
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("unexpected inbox slice of multiple actors, want %s got %s", want, got)
 	}
 }

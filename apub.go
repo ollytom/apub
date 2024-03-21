@@ -63,6 +63,7 @@ type Activity struct {
 	Audience  string     `json:"audience,omitempty"`
 	Href      string     `json:"href,omitempty"`
 	Tag       []Activity `json:"tag,omitempty"`
+	Endpoints Endpoints  `json:"endpoints,omitempty"`
 	// Contains a JSON-encoded Activity, or a URL as a JSON string
 	// pointing to an Activity. Use Activity.Unwrap() to access
 	// the enclosed, decoded value.
@@ -138,6 +139,7 @@ type Actor struct {
 	Inbox     string     `json:"inbox"`
 	Outbox    string     `json:"outbox"`
 	Followers string     `json:"followers"`
+	Endpoints Endpoints  `json:"endpoints,omitempty"`
 	Published *time.Time `json:"published,omitempty"`
 	PublicKey PublicKey  `json:"publicKey"`
 }
@@ -188,4 +190,33 @@ func (a *Actor) FollowersAddress() *mail.Address {
 		addr.Name += " (followers)"
 	}
 	return addr
+}
+
+type Endpoints struct {
+	SharedInbox string `json:"sharedInbox,omitempty"`
+}
+
+// Inboxes returns a deduplicated slice of inbox endpoints ActivityPub clients should send to.
+// Shared inboxes, if present, are selected over an Actor's personal inbox.
+// See W3C Recommendation ActivityPub Section 7.1.3 Shared Inbox Delivery.
+func Inboxes(actors []Actor) []string {
+	var inboxes []string
+	for _, a := range actors {
+		box := a.Inbox
+		if a.Endpoints.SharedInbox != "" {
+			box = a.Endpoints.SharedInbox
+		}
+		var match bool
+		for i := range inboxes {
+			if inboxes[i] == box {
+				match = true
+				break
+			}
+		}
+		if match {
+			continue
+		}
+		inboxes = append(inboxes, box)
+	}
+	return inboxes
 }

@@ -1,0 +1,18 @@
+{
+	"@context": [
+		"https://www.w3.org/ns/activitystreams",
+		"https://w3id.org/security/v1"
+	],
+	"id": "https://apubtest2.srcbeat.com/otl/actor.json",
+	"type": "Person",
+	"inbox": "https://apubtest2.srcbeat.com/otl/inbox",
+	"outbox": "https://apubtest2.srcbeat.com/otl/outbox",
+	"name": "Oliver Lowe",
+	"preferredUsername": "otl",
+	"publicKey": {
+		"id": "https://apubtest2.srcbeat.com/otl/actor.json#main-key",
+		"owner": "https://apubtest2.srcbeat.com/otl/actor.json",
+		"publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAup/3R3YKTRAdhz/xX908\ns4nZKX9IwJfo8xKANbDrFkuBHHYggXV6bB3eVBGh6vDoGDVqmZ79ujXl8LMSo1dC\nVTo4GdBhCy3/BEtl3xoM80LEqmnamq72+tleCYe3a22YOkSLeTXTIREB4VfTataS\n6fVntVs1xDoR6YC+yR6PKqeFsEhQVcnFQ1Fk93nhPoC03RLqlmWkOWuhw4AhELCK\na6ydVEH8raevAbujJyRpZ7JoMtZy9NfuKI4bxorNga2LGnf3qyqS/gAFmGO/ncRu\nwqyhE1VWbtK7MRl3H+ltL/gwhaQMrHImCnWR1EvYw0nabp0519QaPoQoFWvdJbHv\nPwIDAQAB\n-----END PUBLIC KEY-----"
+	}
+}
+

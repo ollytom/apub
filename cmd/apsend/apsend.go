@@ -153,18 +153,22 @@ func main() {
 			log.Fatalf("append activities to outbox: %v", err)
 		}
 
+		var actors []apub.Actor
 		for _, rcpt := range remote {
 			if strings.Contains(rcpt, "+followers") {
 				rcpt = strings.Replace(rcpt, "+followers", "", 1)
 			}
-			ra, err := client.Finger(rcpt)
+			a, err := client.Finger(rcpt)
 			if err != nil {
 				log.Printf("webfinger %s: %v", rcpt, err)
 				gotErr = true
 				continue
 			}
-			if _, err = client.Send(ra.Inbox, create); err != nil {
-				log.Printf("send %s %s to %s: %v", activity.Type, activity.ID, rcpt, err)
+			actors = append(actors, *a)
+		}
+		for _, inbox := range apub.Inboxes(actors) {
+			if _, err = client.Send(inbox, create); err != nil {
+				log.Printf("send %s %s to %s: %v", activity.Type, activity.ID, inbox, err)
 				gotErr = true
 			}
 		}
