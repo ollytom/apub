@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"mime/quotedprintable"
 	"net/mail"
 	"net/smtp"
 	"strings"
@@ -119,10 +120,6 @@ func UnmarshalMail(msg *mail.Message, client *Client) (*Activity, error) {
 	if strings.HasPrefix(ct, "multipart") {
 		return nil, fmt.Errorf("cannot unmarshal from multipart message")
 	}
-	enc := msg.Header.Get("Content-Transfer-Encoding")
-	if enc == "quoted-printable" {
-		return nil, fmt.Errorf("cannot decode message with transfer encoding: %s", enc)
-	}
 
 	date, err := msg.Header.Date()
 	if err != nil {
@@ -181,7 +178,12 @@ func UnmarshalMail(msg *mail.Message, client *Client) (*Activity, error) {
 	}
 
 	buf := &bytes.Buffer{}
-	if _, err := io.Copy(buf, msg.Body); err != nil {
+	if msg.Header.Get("Content-Transfer-Encoding") == "quoted-printable" {
+		_, err = io.Copy(buf, quotedprintable.NewReader(msg.Body))
+	} else {
+		_, err = io.Copy(buf, msg.Body)
+	}
+	if err != nil {
 		return nil, fmt.Errorf("read message body: %v", err)
 	}
 	content := strings.TrimSpace(strings.ReplaceAll(buf.String(), "\r", ""))
