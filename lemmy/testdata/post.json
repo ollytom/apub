@@ -1,0 +1,170 @@
+{
+    "post_view": {
+        "post": {
+            "id": 1363000,
+            "name": "mpost",
+            "body": "Hello, world!",
+            "creator_id": 151025,
+            "community_id": 3,
+            "removed": false,
+            "locked": false,
+            "published": "2023-08-23T07:22:39.559420Z",
+            "deleted": false,
+            "nsfw": false,
+            "ap_id": "https://lemmy.sdf.org/post/2583193",
+            "local": false,
+            "language_id": 0,
+            "featured_community": false,
+            "featured_local": false
+        },
+        "creator": {
+            "id": 151025,
+            "name": "otl",
+            "display_name": "Oliver Lowe",
+            "avatar": "https://lemmy.sdf.org/pictrs/image/eea12c44-dc27-4e44-979e-0b206e90bcc4.png",
+            "banned": false,
+            "published": "2023-06-13T15:00:36.897955Z",
+            "actor_id": "https://lemmy.sdf.org/u/otl",
+            "bio": "[About me](http://www.olowe.co/about.html)",
+            "local": false,
+            "banner": "https://lemmy.sdf.org/pictrs/image/2bfb82b5-a078-4411-bbf2-87c0df899041.png",
+            "deleted": false,
+            "bot_account": false,
+            "instance_id": 57
+        },
+        "community": {
+            "id": 3,
+            "name": "localtesting",
+            "title": "Testing",
+            "description": "A local community for testing lemmy on the aussie.zone instance.",
+            "removed": false,
+            "published": "2023-06-08T07:05:23.856002Z",
+            "updated": "2023-06-18T15:28:59.347113Z",
+            "deleted": false,
+            "nsfw": false,
+            "actor_id": "https://aussie.zone/c/localtesting",
+            "local": true,
+            "icon": "https://aussie.zone/pictrs/image/9775c10c-b40c-4481-a935-223a71953634.jpeg",
+            "hidden": false,
+            "posting_restricted_to_mods": false,
+            "instance_id": 1
+        },
+        "creator_banned_from_community": false,
+        "creator_is_moderator": false,
+        "creator_is_admin": false,
+        "counts": {
+            "post_id": 1363000,
+            "comments": 0,
+            "score": 3,
+            "upvotes": 3,
+            "downvotes": 0,
+            "published": "2023-08-23T07:22:39.559420Z",
+            "newest_comment_time": "2023-08-23T07:22:39.559420Z"
+        },
+        "subscribed": "NotSubscribed",
+        "saved": false,
+        "read": false,
+        "creator_blocked": false,
+        "unread_comments": 0
+    },
+    "community_view": {
+        "community": {
+            "id": 3,
+            "name": "localtesting",
+            "title": "Testing",
+            "description": "A local community for testing lemmy on the aussie.zone instance.",
+            "removed": false,
+            "published": "2023-06-08T07:05:23.856002Z",
+            "updated": "2023-06-18T15:28:59.347113Z",
+            "deleted": false,
+            "nsfw": false,
+            "actor_id": "https://aussie.zone/c/localtesting",
+            "local": true,
+            "icon": "https://aussie.zone/pictrs/image/9775c10c-b40c-4481-a935-223a71953634.jpeg",
+            "hidden": false,
+            "posting_restricted_to_mods": false,
+            "instance_id": 1
+        },
+        "subscribed": "NotSubscribed",
+        "blocked": false,
+        "counts": {
+            "community_id": 3,
+            "subscribers": 94,
+            "posts": 69,
+            "comments": 129,
+            "published": "2023-06-08T07:05:23.856002Z",
+            "users_active_day": 4,
+            "users_active_week": 4,
+            "users_active_month": 13,
+            "users_active_half_year": 54
+        }
+    },
+    "moderators": [
+        {
+            "community": {
+                "id": 3,
+                "name": "localtesting",
+                "title": "Testing",
+                "description": "A local community for testing lemmy on the aussie.zone instance.",
+                "removed": false,
+                "published": "2023-06-08T07:05:23.856002Z",
+                "updated": "2023-06-18T15:28:59.347113Z",
+                "deleted": false,
+                "nsfw": false,
+                "actor_id": "https://aussie.zone/c/localtesting",
+                "local": true,
+                "icon": "https://aussie.zone/pictrs/image/9775c10c-b40c-4481-a935-223a71953634.jpeg",
+                "hidden": false,
+                "posting_restricted_to_mods": false,
+                "instance_id": 1
+            },
+            "moderator": {
+                "id": 2,
+                "name": "admin",
+                "avatar": "https://aussie.zone/pictrs/image/95fc3553-a929-4143-a370-605db92fe4ae.jpeg",
+                "banned": false,
+                "published": "2023-06-08T06:56:38.842362Z",
+                "actor_id": "https://aussie.zone/u/admin",
+                "bio": "Benevolent dictator",
+                "local": true,
+                "deleted": false,
+                "bot_account": false,
+                "instance_id": 1
+            }
+        },
+        {
+            "community": {
+                "id": 3,
+                "name": "localtesting",
+                "title": "Testing",
+                "description": "A local community for testing lemmy on the aussie.zone instance.",
+                "removed": false,
+                "published": "2023-06-08T07:05:23.856002Z",
+                "updated": "2023-06-18T15:28:59.347113Z",
+                "deleted": false,
+                "nsfw": false,
+                "actor_id": "https://aussie.zone/c/localtesting",
+                "local": true,
+                "icon": "https://aussie.zone/pictrs/image/9775c10c-b40c-4481-a935-223a71953634.jpeg",
+                "hidden": false,
+                "posting_restricted_to_mods": false,
+                "instance_id": 1
+            },
+            "moderator": {
+                "id": 3,
+                "name": "lodion",
+                "display_name": "Lodion \ud83c\udde6\ud83c\uddfa",
+                "avatar": "https://aussie.zone/pictrs/image/2644a4fe-cce3-4126-b80b-40e6369976d1.jpeg",
+                "banned": false,
+                "published": "2023-06-08T06:59:14.987834Z",
+                "actor_id": "https://aussie.zone/u/lodion",
+                "bio": "I also have backup accounts on these instances:  \nhttps://beehaw.org/u/lodion  \nhttps://sh.itjust.works/u/lodion  \nhttps://lemmy.world/u/lodion  \nhttps://lemm.ee/u/lodion  \nhttps://reddthat.com/u/lodion",
+                "local": true,
+                "deleted": false,
+                "bot_account": false,
+                "instance_id": 1
+            }
+        }
+    ],
+    "cross_posts": []
+}

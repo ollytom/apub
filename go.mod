@@ -3,6 +3,7 @@ module olowe.co/apub
 go 1.19
 
 require (
+	9fans.net/go v0.0.7
 	github.com/emersion/go-smtp v0.20.2
 	webfinger.net/go/webfinger v0.1.0
 )
